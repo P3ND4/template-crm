@@ -1,0 +1,95 @@
+import { useEffect, useRef, useState } from 'react';
+import useFocusTrap from '../../hooks/useFocusTrap.js';
+import useScrollLock from '../../hooks/useScrollLock.js';
+import { NavLink, useLocation } from 'react-router-dom';
+import { ChevronRight, ChevronsUpDown, PanelLeftClose, X } from 'lucide-react';
+import { NAV, NAV_FOOTER } from '../../app/navigation.js';
+import { useT } from '../../i18n/index.jsx';
+import { IconButton } from '../ui/Button.jsx';
+import cx from '../../lib/cx.js';
+
+function NavItem({ item, counts, onNavigate }) {
+  const t = useT();
+  const { pathname } = useLocation();
+  const inSection = item.children && pathname.startsWith(item.to);
+  const [open, setOpen] = useState(inSection);
+  useEffect(() => { if (inSection) setOpen(true); }, [inSection]);
+  const Icon = item.icon;
+
+  if (!item.children) {
+    return (
+      <NavLink to={item.to} end={item.end} className="nav__link" onClick={onNavigate}>
+        <Icon aria-hidden="true" /><span className="nav__label">{t(item.labelKey)}</span>
+      </NavLink>
+    );
+  }
+  const subId = `nav-sub-${item.id}`;
+  return (
+    <div className="nav__group">
+      <button type="button" className={cx('nav__link', inSection && 'active')} aria-expanded={open} aria-controls={subId} onClick={() => setOpen((o) => !o)}>
+        <Icon aria-hidden="true" /><span className="nav__label">{t(item.labelKey)}</span><ChevronRight className="chev" aria-hidden="true" />
+      </button>
+      {open && (
+        <div className="nav__sub" id={subId}>
+          {item.children.map((c) => (
+            <NavLink key={c.id} to={c.to} end={c.end} className="nav__link" onClick={onNavigate}>
+              <span className="nav__label">{t(c.labelKey)}</span>
+              {c.badge && counts[c.badge] > 0 && <span className="nav__badge" aria-label={`${counts[c.badge]} unread`}>{counts[c.badge]}</span>}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Sidebar({ open, collapsed, onClose, onToggleCollapse, counts = {} }) {
+  const t = useT();
+  const ref = useRef(null);
+  // Mobile drawer behaves like a dialog: focus trapped inside, background scroll locked, Esc closes.
+  useFocusTrap(ref, open);
+  useScrollLock(open);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+  return (
+    <>
+      {open && <div className="sidebar-scrim" onClick={onClose} aria-hidden="true" />}
+      <aside ref={ref} className={cx('sidebar', open && 'is-open')} aria-label={t('nav.main')} {...(open ? { role: 'dialog', 'aria-modal': 'true' } : {})}>
+        <div className="sidebar__brand">
+          {/* Desktop only. Same corner as the topbar's "expand" button, so hiding and showing the sidebar never move the control. */}
+          <IconButton
+            className="sidebar__toggle"
+            icon={PanelLeftClose}
+            label={t('nav.collapse')}
+            title={`${t('nav.collapse')} (Ctrl/⌘ + B)`}
+            aria-expanded={!collapsed}
+            onClick={onToggleCollapse}
+          />
+          <NavLink to="/" className="wordmark" aria-label="Template CRM — Dashboard" onClick={onClose}>
+            Template<span>.</span><small>CRM</small>
+          </NavLink>
+          <IconButton className="show-mobile" icon={X} label={t('nav.closeMenu')} onClick={onClose} style={{ color: 'var(--brand-muted)' }} />
+        </div>
+        <button type="button" className="org-switch" title={t('topbar.switchOrg')}>
+          <span className="avatar avatar--sm avatar--dark" aria-hidden="true">D</span>
+          <span className="grow" style={{ minWidth: 0 }}>
+            <span className="org-switch__name" style={{ display: 'block' }}>{t('app.org')}</span>
+            <span className="org-switch__plan">{t('app.demoData')}</span>
+          </span>
+          <ChevronsUpDown aria-hidden="true" />
+        </button>
+        <nav className="nav" aria-label={t('nav.main')}>
+          {NAV.map((item) => <NavItem key={item.id} item={item} counts={counts} onNavigate={onClose} />)}
+          {/* Settings sits at the bottom of the same scroll area, so its sections never squeeze the main modules. */}
+          <div className="nav__bottom">
+            {NAV_FOOTER.map((item) => <NavItem key={item.id} item={item} counts={counts} onNavigate={onClose} />)}
+          </div>
+        </nav>
+      </aside>
+    </>
+  );
+}
