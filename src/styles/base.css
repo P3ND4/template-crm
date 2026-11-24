@@ -87,7 +87,8 @@ td.num, th.num { text-align: right; white-space: nowrap; }
    because in Chromium they would switch the custom style off). */
 :root { --scroll-thumb: #9E9E9E; --scroll-thumb-hover: #6B6B6B; --scroll-size: 12px; }
 [data-theme='dark'] { --scroll-thumb: #5C5C5C; --scroll-thumb-hover: #8A8A8A; }
-.sidebar, .auth__brand { --scroll-thumb: #555555; --scroll-thumb-hover: #7A7A7A; }
+.topbar, .auth__brand { --scroll-thumb: #555555; --scroll-thumb-hover: #7A7A7A; }
+.ribbon { --scroll-thumb: #C4C4C4; }
 
 ::-webkit-scrollbar { width: var(--scroll-size); height: var(--scroll-size); background: transparent; }
 ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }

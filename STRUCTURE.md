@@ -13,7 +13,7 @@ template-crm/
    ├─ main.jsx          providers (i18n, session, toasts) + router
    ├─ app/
    │  ├─ router.jsx     route map
-   │  ├─ navigation.js  sidebar / palette nav config
+   │  ├─ navigation.js  modules & sections (tabs, ribbon, palette, path)
    │  ├─ pwa.js         install prompt, installed/online state, local notifications
    │  ├─ SessionProvider.jsx  signed-in user (mock), "view as" role, module access, theme, brand accent
    │  └─ theme.js       brand accent presets
@@ -21,14 +21,14 @@ template-crm/
    │  ├─ tokens.css     ← all design tokens (brand lives here)
    │  ├─ base.css       reset, typography, helpers (mobile-first)
    │  ├─ components.css UI component styles
-   │  └─ layout.css     sidebar, topbar, shells, palette, dashboard
+   │  └─ layout.css     header (title bar · tabs · ribbon), shells, palette, dashboard
    ├─ i18n/             en.js · es.js (same keys) · index.jsx (useT)
    ├─ components/
    │  ├─ ui/            Button, IconButton, Field, Input, Select, Textarea (auto-grow), DatePicker,
    │  │                 Card, Badge, Avatar, Tabs, SegmentedControl, Table, Pagination, Menu,
    │  │                 Toast, EmptyState, Skeleton, DataState, Kpi, Kanban, RichTextEditor, Switch
    │  ├─ shells/        FormShell · InlinePanel · PageShell · FormPage · BackButton · ConfirmDialog
-   │  ├─ layout/        AppLayout · Sidebar (collapsible) · Topbar (2 rows) · ModuleNav (modules + submodules rows) · CommandPalette · Access (NoAccess page, view-as banner) · PwaStatus (service worker: offline ready / new version)
+   │  ├─ layout/        AppLayout · Topbar (title bar · module tabs · ribbon) · Ribbon (contextual tab / page controls) · AddressBar (location path) · FillPage · CommandPalette · Access (NoAccess page, view-as banner) · PwaStatus (service worker: offline ready / new version)
    │  ├─ quick/         QuickActionsProvider + Task / Appointment / Note / Contact modals
    │  ├─ list/          ListToolbar · SearchInput · FilterSelect · ViewToggle
    │  ├─ crm/           shared cells (PersonCell, Score, StatusBadge, RowMenu, UserChip)
@@ -87,7 +87,7 @@ template-crm/
 
 Rule: the app navigates like Windows Explorer. Every form or viewer opens **in the page**: a short action
 opens an **inline panel** at the top of the current page; anything else is its own **page** (with Back /
-Forward / Up in the address bar). The only dialogs left are confirmations ("Delete?", "Leave without saving?").
+Forward / Up in the title bar). The only dialogs left are confirmations ("Delete?", "Leave without saving?").
 
 | Action | Pattern |
 |---|---|
@@ -104,7 +104,7 @@ Forward / Up in the address bar). The only dialogs left are confirmations ("Dele
 | WhatsApp / SMS reply · internal note · email quick reply | Inline composer in the thread pane |
 | Change selection status · approve / reject expense · change a user's role | Inline (row or bulk) |
 | Settings sections | Page with sticky Save bar (`SettingsForm`) |
-| AI assistant | Side panel (non-blocking), opened from the address bar (desktop) or the floating button (phones) |
+| AI assistant | Side panel (non-blocking), opened from the title bar (desktop) or the floating button (phones) |
 | Confirm / delete / discard changes · revoke invitation | Dialog (`ConfirmDialog`) — the only dialog |
 
 **Shared anatomy** (`FormShell`): fixed header (title + ✕ or Back) · body that scrolls vertically only · fixed footer (Cancel / Save + save state).

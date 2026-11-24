@@ -10,6 +10,7 @@ import { useT } from '../../../i18n/index.jsx';
 import { date, money } from '../../../lib/format.js';
 import { crmService, leadsService, opportunitiesService } from '../../../services/index.js';
 import { LEAD_STATUSES } from './LeadsPage.jsx';
+import { RibbonContext } from '../../../components/layout/Ribbon.jsx';
 
 const ACTIVITY_ICON = { created: UserPlus, referral: Users, contacted: Phone, qualified: CheckSquare, opportunity: Sparkles };
 
@@ -66,12 +67,12 @@ export default function LeadDetailPage() {
                   </div>
                 </div>
               </div>
-              <div className="page-head__actions">
+              <RibbonContext label={t('ribbon.context.lead')}>
                 <Button icon={CalendarPlus} onClick={() => quick.open('appointment')}>{t('quick.appointment')}</Button>
                 <Button icon={CheckSquare} onClick={() => quick.open('task')}>{t('quick.task')}</Button>
                 <Button icon={Pencil} to={`/crm/leads/${lead.id}/edit`}>{t('common.edit')}</Button>
                 {!data.opportunity && <Button variant="primary" icon={ArrowRight} onClick={convert}>{t('leads.convert')}</Button>}
-              </div>
+              </RibbonContext>
             </div>
 
             <div className="detail-grid">

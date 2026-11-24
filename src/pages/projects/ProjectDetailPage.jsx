@@ -21,6 +21,7 @@ import ScopeTab from './tabs/ScopeTab.jsx';
 import SelectionsTab from './tabs/SelectionsTab.jsx';
 import TasksTab from './tabs/TasksTab.jsx';
 import TimelineTab from './tabs/TimelineTab.jsx';
+import { RibbonContext } from '../../components/layout/Ribbon.jsx';
 
 const TABS = ['overview', 'scope', 'tasks', 'timeline', 'selections', 'budget', 'documents', 'photos', 'communications', 'finance', 'notes'];
 const PANELS = {
@@ -60,12 +61,12 @@ export default function ProjectDetailPage() {
                   </div>
                 </div>
               </div>
-              <div className="page-head__actions">
+              <RibbonContext label={t('ribbon.context.project')}>
                 <Button icon={CheckSquare} onClick={() => quick.open('task', { projectId: p.id, onSaved: refetch })}>{t('quick.task')}</Button>
                 <Button icon={CalendarPlus} onClick={() => quick.open('appointment', { projectId: p.id, contactId: p.clientId })}>{t('quick.appointment')}</Button>
                 <Button icon={StickyNote} onClick={() => setTab('notes')}>{t('quick.note')}</Button>
                 <Button variant="primary" icon={Pencil} to={`/projects/${p.id}/edit`}>{t('common.edit')}</Button>
-              </div>
+              </RibbonContext>
             </div>
             <Tabs label={p.name} value={tab} onChange={setTab} tabs={TABS.map((x) => ({ id: x, label: t(`projects.tabs.${x}`), count: counts?.[x] }))} />
             <div className="tab-panel" role="tabpanel" aria-label={t(`projects.tabs.${tab}`)}>

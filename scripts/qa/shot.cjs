@@ -1,6 +1,6 @@
 /*
  * Screenshot one page:  npm run qa:shot -- /crm/leads out.png [width] [height] [scale] [full]
- *   COLLAPSED=1 → sidebar hidden · SIGNED_OUT=1 → no session (e.g. /login)
+ *   COLLAPSED=1 → ribbon collapsed · SIGNED_OUT=1 → no session (e.g. /login)
  */
 const { chromium } = require('playwright');
 const prepare = require('./session.cjs');

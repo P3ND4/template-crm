@@ -11,6 +11,7 @@ import useUrlState from '../../../hooks/useUrlState.js';
 import { useT } from '../../../i18n/index.jsx';
 import { ago, date, dayLabel, money, percent, time } from '../../../lib/format.js';
 import { crmService } from '../../../services/index.js';
+import { RibbonContext } from '../../../components/layout/Ribbon.jsx';
 
 
 export default function ContactDetailPage() {
@@ -49,13 +50,13 @@ export default function ContactDetailPage() {
                   </div>
                 </div>
               </div>
-              <div className="page-head__actions">
+              <RibbonContext label={t('ribbon.context.contact')}>
                 <Button icon={MessageCircle} to="/crm/communications/whatsapp">{t('channels.whatsapp')}</Button>
                 <Button icon={MessageSquareText} to={`/crm/communications/sms${data.conversations.find((cv) => cv.channel === 'sms') ? `?c=${data.conversations.find((cv) => cv.channel === 'sms').id}` : ''}`}>{t('channels.sms')}</Button>
                 <Button icon={Mail} to={`/crm/communications/email/compose?to=${encodeURIComponent(c.email)}&contact=${c.id}`}>{t('channels.email')}</Button>
                 <Button icon={CalendarPlus} onClick={() => quick.open('appointment', { contactId: c.id })}>{t('quick.appointment')}</Button>
                 <Button icon={Pencil} onClick={() => quick.open('contact', { contact: c, onSaved: refetch })}>{t('common.edit')}</Button>
-              </div>
+              </RibbonContext>
             </div>
 
             <Tabs label={c.name} value={tab} onChange={setTab} tabs={tabs} />

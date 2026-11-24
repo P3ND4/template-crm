@@ -10,6 +10,7 @@ import { date, money, percent } from '../../../lib/format.js';
 import { crmService } from '../../../services/index.js';
 import cx from '../../../lib/cx.js';
 import { STAGES } from './PipelinePage.jsx';
+import { RibbonContext } from '../../../components/layout/Ribbon.jsx';
 
 export default function OpportunityPage() {
   const t = useT();
@@ -43,11 +44,11 @@ export default function OpportunityPage() {
                   <span>· {t('pipeline.probability')}: {percent(o.probability)}</span>
                 </div>
               </div>
-              <div className="page-head__actions">
+              <RibbonContext label={t('ribbon.context.opportunity')}>
                 <Button icon={CalendarPlus} onClick={() => quick.open('appointment')}>{t('quick.appointment')}</Button>
                 <Button icon={CheckSquare} onClick={() => quick.open('task')}>{t('quick.task')}</Button>
                 <Button icon={StickyNote} onClick={() => quick.open('note')}>{t('quick.note')}</Button>
-              </div>
+              </RibbonContext>
             </div>
             <Card title={t('pipeline.progress')} style={{ marginBottom: 16 }}>
               <ol className="stepper" aria-label={t('pipeline.progress')}>

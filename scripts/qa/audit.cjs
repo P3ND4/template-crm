@@ -2,8 +2,8 @@
  * Responsive + console audit: every route × 10 widths. Fails (exit 1) on horizontal page overflow
  * or any console error/warning. Run against a production build:
  *   npm run build && npm run preview          (other terminal)
- *   npm run qa:audit                          (sidebar open)
- *   COLLAPSED=1 npm run qa:audit              (sidebar hidden)
+ *   npm run qa:audit                          (ribbon open)
+ *   COLLAPSED=1 npm run qa:audit              (ribbon collapsed)
  *   BASE=http://localhost:5173 npm run qa:audit   (dev server: also catches "[i18n] missing key" warnings)
  * Needs Playwright once: npm i -D playwright && npx playwright install chromium
  */

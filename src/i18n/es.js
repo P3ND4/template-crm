@@ -6,6 +6,17 @@ const es = {
     org: 'Demo Company',
     demoData: 'Datos de demostración',
   },
+  ribbon: {
+    label: 'Cinta de {module}',
+    goto: 'Ir a',
+    new: 'Nuevo',
+    collapse: 'Ocultar la cinta',
+    expand: 'Mostrar la cinta',
+    period: 'Periodo',
+    view: 'Vista',
+    actions: 'Acciones',
+    context: { lead: 'Lead', contact: 'Contacto', project: 'Proyecto', opportunity: 'Oportunidad', appointment: 'Cita', estimate: 'Presupuesto', invoice: 'Factura' },
+  },
   address: {
     label: 'Ubicación',
     back: 'Atrás',

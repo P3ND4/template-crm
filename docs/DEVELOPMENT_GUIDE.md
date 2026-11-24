@@ -16,7 +16,7 @@ Esta guía explica **cómo está construido el proyecto y por qué**, para dos u
 3. [Arquitectura en capas y reglas de oro](#3-arquitectura-en-capas-y-reglas-de-oro)
 4. [Arranque: providers y rutas](#4-arranque-providers-y-rutas)
 5. [Sistema de diseño: tokens, CSS y temas](#5-sistema-de-diseño-tokens-css-y-temas)
-6. [Layout: sidebar, topbar, navegación y contenido](#6-layout-sidebar-topbar-navegación-y-contenido)
+6. [Layout: navegación superior (barra de título, pestañas y cinta) y contenido](#6-layout-navegación-superior-barra-de-título-pestañas-y-cinta-y-contenido)
 7. [Responsive: viewport vs container queries](#7-responsive-viewport-vs-container-queries)
 8. [Navegación tipo Explorador: páginas y paneles, sin modales](#8-navegación-tipo-explorador-páginas-y-paneles-sin-modales)
 9. [Formularios](#9-formularios)
@@ -71,7 +71,7 @@ src/
 ├─ main.jsx               orden de providers (pwa → i18n → session → toasts → router)
 ├─ app/                   configuración global
 │  ├─ router.jsx          TODAS las rutas
-│  ├─ navigation.js       módulos y submódulos (sidebar, topbar, paleta, permisos)
+│  ├─ navigation.js       módulos y secciones (pestañas, cinta, paleta, ruta, permisos)
 │  ├─ SessionProvider.jsx usuario, rol, permisos, tema, color de marca
 │  ├─ pwa.js              instalación, online/offline, notificaciones locales
 │  └─ theme.js            presets de color de marca
@@ -84,7 +84,7 @@ src/
 ├─ components/
 │  ├─ ui/                 átomos: Button, Field, Input, Table, Tabs, Menu, Toast…
 │  ├─ shells/             estructura de formularios y páginas: FormShell, InlinePanel, PageShell…
-│  ├─ layout/             AppLayout, Sidebar, Topbar, ModuleNav, CommandPalette, Access, PwaStatus
+│  ├─ layout/             AppLayout, Topbar (título · pestañas · cinta), Ribbon, AddressBar, FillPage, CommandPalette, Access, PwaStatus
 │  ├─ list/               ListToolbar (búsqueda, filtros, vista tabla/tarjetas)
 │  ├─ quick/              modales de creación rápida (+ Nuevo)
 │  └─ crm/ finance/ comms/ charts/ ai/   componentes de dominio (comms: inbox de chat compartido WhatsApp/SMS, ConsentBadge, ChannelBadge)
@@ -114,8 +114,8 @@ pages/ (pantallas)  ──usa──►  components/ (UI reutilizable)
 6. **Cero colores sueltos**: todo sale de variables de `tokens.css`. Cambiar la marca = editar un archivo.
 7. **Nunca scroll horizontal de la página**: tablas y filas de pestañas scrollean dentro de su caja. Lo verifica `npm run qa:audit`.
 8. **Accesible por defecto**: foco visible, labels reales, `aria-*` en los componentes base, teclado en todo (menús, tabs, kanban, modales).
-9. **Navegación desde un solo config** (`navigation.js`): sidebar, topbar, paleta y permisos leen de ahí.
-10. **Nada se repite entre sidebar y topbar** (ver §6).
+9. **Navegación desde un solo config** (`navigation.js`): pestañas, cinta, paleta, ruta y permisos leen de ahí.
+10. **Sin sidebar**: navegación superior tipo Office (ver §6).
 
 ---
 
@@ -166,16 +166,16 @@ createBrowserRouter([
 | Grupo | Variables | Notas |
 |---|---|---|
 | Neutros | `--bg --surface --surface-2 --surface-3 --border --border-strong --text --text-muted --text-subtle` | fondo crema, superficies blancas |
-| Marca | `--brand --brand-2 --brand-3 --brand-contrast --brand-muted` | sidebar oscuro |
+| Marca | `--brand --brand-2 --brand-3 --brand-contrast --brand-muted` | encabezado oscuro (barra de título y pestañas) |
 | Acento | `--accent --accent-hover --accent-strong --accent-soft --accent-contrast` | botón primario, links, activo |
 | Estados | `--success --warning --danger --info` + `*-soft` | todos AA sobre blanco |
 | Gráficas | `--chart-1 --chart-2 --chart-grid --chart-axis` | validados para daltonismo |
 | Tipografía | `--font-sans --font-display --fs-12…32 --fw-* --lh-* --tracking-caps` | Inter + Work Sans |
 | Espaciado | `--sp-1…12` | grid de 4 px |
 | Forma | `--radius-sm/--radius/--radius-lg/--radius-pill/--radius-round --shadow-1/2/3 --focus-ring` | Estilo Windows 8/10: contenedores rectos (0), controles 2px, sin sombra en tarjetas |
-| Layout | `--sidebar-w --topbar-row-h --subbar-h --topbar-h --content-max` | `--topbar-h` cambia en `.app` |
+| Layout | `--topbar-h --content-max` | `--topbar-h` se mide en tiempo real (alto del encabezado) |
 | Modales | `--modal-sm/md/lg --modal-max-h` | 480 / 640 / 840 |
-| Capas | `--z-sticky 10 · --z-sidebar 30 · --z-topbar 40 · --z-dropdown 50 · --z-modal 100 · --z-toast 200` | no inventes z-index |
+| Capas | `--z-sticky 10 · --z-topbar 40 · --z-dropdown 50 · --z-modal 100 · --z-toast 200` | no inventes z-index |
 
 **Tema oscuro:** `[data-theme='dark']` redefine las mismas variables. `SessionProvider` pone `data-theme` en `<html>` según la preferencia (claro / oscuro / sistema), guardada en `localStorage: app.theme`.
 
@@ -187,13 +187,19 @@ createBrowserRouter([
 |---|---|
 | `base.css` | reset, tipografía, utilidades (`.row`, `.stack`, `.grid-2/3/4`, `.truncate`, `.sr-only`, `.muted`, `.hide-mobile`) |
 | `components.css` | un bloque por componente (`.btn`, `.field`, `.table`, `.badge`, `.modal`, `.kanban`, finanzas, IA, settings, PWA…) |
-| `layout.css` | `.app`, sidebar, topbar, contenido, shells de formulario, paleta, dashboard, login |
+| `layout.css` | `.app`, encabezado (barra de título · pestañas · cinta), contenido, shells de formulario, paleta, dashboard, login |
 
-Convención de nombres tipo BEM: `.bloque`, `.bloque__elemento`, `.bloque--variante`, estados con `.is-*` / `.has-*` (`.is-collapsed`, `.has-subbar`, `.is-running`). Sin CSS-in-JS. `style={{}}` inline solo para valores puntuales (anchos dinámicos, `--i` de animaciones).
+Convención de nombres tipo BEM: `.bloque`, `.bloque__elemento`, `.bloque--variante`, estados con `.is-*` / `.has-*` (`.is-current`, `.is-ribbon-collapsed`, `.is-running`). Sin CSS-in-JS. `style={{}}` inline solo para valores puntuales (anchos dinámicos, `--i` de animaciones).
 
 ---
 
-## 6. Layout: sidebar, topbar, navegación y contenido
+## 6. Layout: navegación superior (barra de título, pestañas y cinta) y contenido
+
+No hay sidebar. Arriba hay tres filas, como en Word o en el Explorador de Windows:
+
+1. **Barra de título** (grafito): Atrás · Adelante · Subir, la marca, búsqueda (abre la paleta), asistente IA, notificaciones y usuario.
+2. **Pestañas de módulo**: Dashboard · CRM · Proyectos · Finanzas · IA · Ajustes (+ la **pestaña contextual** del registro abierto).
+3. **Cinta** (una línea): *Ir a* (secciones del módulo), *Nuevo* (lo que se crea en ese módulo) y los controles propios de la página.
 
 ### `src/app/navigation.js`
 
@@ -202,29 +208,51 @@ export const NAV = [
   { id: 'dashboard', labelKey: 'nav.dashboard', to: '/', icon: LayoutDashboard, end: true },
   {
     id: 'crm', labelKey: 'nav.crm', to: '/crm', icon: Users,
-    children: [
+    children: [                                       // → grupo "Ir a" de la cinta
       { id: 'leads', labelKey: 'nav.leads', to: '/crm/leads', icon: UserPlus },
       { id: 'communications', …, badge: 'unread' },   // badge = clave de `counts` (AppLayout)
     ],
   },
 ];
-export const NAV_FOOTER = [ { id: 'settings', …, children: [...] } ];  // va abajo del sidebar
+export const NAV_FOOTER = [ { id: 'settings', …, children: [...] } ];  // última pestaña
 ```
 
 - El `id` del módulo es también la **clave de permisos** (`dashboard`, `crm`, `projects`, `finance`, `ai`, `settings`).
-- `useActiveModule()` (en `ModuleNav.jsx`) devuelve el módulo dueño de la URL actual.
+- `useActiveModule()` (en `Topbar.jsx`) devuelve el módulo dueño de la URL (los formularios `/new/...` pertenecen a la página desde donde se abrieron).
+- El grupo *Nuevo* de cada módulo está en `useNewItems()` (`Topbar.jsx`).
+
+### La cinta desde una página (`components/layout/Ribbon.jsx`)
+
+```jsx
+// Ficha de un registro: pestaña contextual con sus acciones (los botones siguen siendo de la página).
+<RibbonContext label={t('ribbon.context.lead')}>
+  <Button icon={Pencil} to={`/crm/leads/${id}/edit`}>{t('common.edit')}</Button>
+  <Button variant="primary" icon={ArrowRight} onClick={convert}>{t('leads.convert')}</Button>
+</RibbonContext>
+
+// Controles propios de la página, al final de la cinta del módulo (ej. Dashboard).
+<RibbonPage>
+  <RibbonGroup label={t('ribbon.period')}>
+    {RANGES.map((r) => <button key={r} className="rbtn" aria-pressed={range === r} onClick={() => setRange(r)}>…</button>)}
+  </RibbonGroup>
+</RibbonPage>
+```
+
+- Los hijos se renderizan en la cinta con un *portal*: el estado y los handlers siguen en la página. Los `<Button>` toman el estilo de la cinta solos; para botones de alternar usa `.rbtn` + `aria-pressed`.
+- La pestaña contextual se selecciona sola al abrir el registro; la pestaña del módulo vuelve a la cinta del módulo (sin navegar).
 
 ### Comportamiento
 
-| | Escritorio, sidebar abierto | Escritorio, sidebar oculto | Teléfono / tablet (<1024) |
-|---|---|---|---|
-| Sidebar | fijo 248 px con módulos y submódulos | se desliza fuera (no ocupa espacio) | drawer con ☰ (foco atrapado, Esc, bloquea scroll) |
-| Topbar fila 1 | búsqueda ancha · + Nuevo · campana · usuario | botón expandir · "G." · iconos de módulos (entran animados) · búsqueda · acciones | ☰ · nombre del módulo · acciones |
-| Topbar fila 2 | — | submódulos del módulo activo | submódulos como texto |
+| | Escritorio | Teléfono / tablet (<1024) |
+|---|---|---|
+| Barra de título | Atrás · Adelante · Subir · marca · búsqueda ancha · Asistente · campana · usuario | Atrás · marca · icono de búsqueda · campana · usuario |
+| Pestañas | todas visibles + contextual + botón para ocultar la cinta | fila deslizable; la pestaña actual se centra sola |
+| Cinta | una línea; si no cabe, se desliza de lado | igual |
 
-- **Colapsar / expandir**: botón en la esquina superior izquierda (el mismo lugar en ambos estados) o **Ctrl/⌘ + B**. El estado se guarda en `localStorage: app.sidebarCollapsed`. Las animaciones solo corren tras un clic (`.app.nav-anim`) y respetan *reduce motion*.
-- `--topbar-h` vale 60 px o 104 px (con fila 2). Todo lo sticky (cabeceras de tabla, formularios en página, intro de settings) usa `top: var(--topbar-h)`.
-- **`AppLayout`** también renderiza: `ViewAsBanner` + `NoAccess` (permisos), `CommandPalette`, `AssistantLauncher` (botón IA flotante), `PwaStatus` (offline / nueva versión), `QuickActionsProvider` y el *skip link* "Skip to content".
+- **Ocultar / mostrar la cinta**: chevron al final de las pestañas o **Ctrl/⌘ + B**. Se guarda en `localStorage: app.ribbonCollapsed`. Con la cinta oculta, un clic en la pestaña actual la vuelve a mostrar.
+- `--topbar-h` se **mide** (ResizeObserver en `Topbar.jsx`) y se escribe en `.app`. Todo lo sticky (cabeceras de tabla, formularios en página) y las páginas *fill* lo usan.
+- En el teléfono el encabezado es `position: fixed` y `.main` reserva su alto con `padding-top: var(--topbar-h)` (no se mueve con el rebote de iOS).
+- **`AppLayout`** también renderiza: la ruta (`AddressBar`), `ViewAsBanner` + `NoAccess` (permisos), `CommandPalette`, `AssistantLauncher`, `PwaStatus`, `QuickActionsProvider` y el *skip link* "Skip to content".
 
 ### Contenido
 
@@ -248,8 +276,8 @@ Cabecera de página estándar:
 ## 7. Responsive: viewport vs container queries
 
 - **Mobile-first** siempre: estilos base para teléfono, `min-width` para crecer.
-- **Chrome de la app** (sidebar, topbar, modales, toasts) → `@media` por ancho de pantalla: 480 / 640 / 768 / **1024** (aparece el sidebar) / 1280 / 1440.
-- **Contenido de las páginas** → `@container page (…)` por el ancho **real** disponible. Así, al ocultar el sidebar, las páginas ganan columnas sin tocar márgenes.
+- **Chrome de la app** (encabezado, diálogos, toasts) → `@media` por ancho de pantalla: 480 / 640 / 768 / **1024** / 1280 / 1440.
+- **Contenido de las páginas** → `@container page (…)` por el ancho **real** disponible: más ancho = más columnas, sin tocar márgenes.
 
 | Ancho del contenedor | Uso |
 |---|---|
@@ -511,7 +539,7 @@ t('settings.users.invited', { email });  // 'Invitation sent to {email}'
 ```bash
 npm run build && npm run preview                 # en otra terminal
 npm run qa:audit                                 # todas las rutas × 10 anchos (320 → 2560): desborde + consola
-COLLAPSED=1 npm run qa:audit                     # igual, con el sidebar oculto
+COLLAPSED=1 npm run qa:audit                     # igual, con la cinta oculta
 BASE=http://localhost:5173 npm run qa:audit      # contra dev: detecta claves i18n faltantes
 SIGNED_OUT=1 npm run qa:shot -- /login login.png 1440 900
 ```
@@ -551,7 +579,7 @@ Objetivo: quedarte con **el esqueleto** (layout, shells, componentes, hooks, ser
 ### 19.2 Paso a paso
 
 1. **Fork** en GitHub, clona y cambia `name` en `package.json`, `<title>` en `index.html` y `name` / `short_name` / `description` en el manifest (`vite.config.js`).
-2. **Marca:** edita `tokens.css` (19.3), `app/theme.js` (`DEFAULT_ACCENT` y presets) y el wordmark (`Sidebar.jsx`, `Topbar.jsx → .topbar__brand`, `pages/auth/AuthLayout.jsx`). Corre `npm run icons` con tu marca y reemplaza `public/favicon.svg` y `public/screenshots/*`.
+2. **Marca:** edita `tokens.css` (19.3), `app/theme.js` (`DEFAULT_ACCENT` y presets) y el wordmark (`Topbar.jsx → .titlebar__brand`, `pages/auth/AuthLayout.jsx`). Corre `npm run icons` con tu marca y reemplaza `public/favicon.svg` y `public/screenshots/*`.
 3. **Navegación:** deja en `navigation.js` solo Dashboard + 1 módulo de ejemplo + Settings. Ajusta `PERMISSION_MODULES` y la matriz en `data/mock/settings.js`.
 4. **Rutas:** en `router.jsx` borra las de dominio; deja auth, dashboard, el módulo de ejemplo, settings y 404.
 5. **Borra páginas, componentes, services y mocks de dominio.** Arregla los imports con `npm run build`, que falla en el primer import roto.
@@ -565,10 +593,10 @@ Objetivo: quedarte con **el esqueleto** (layout, shells, componentes, hooks, ser
 
 ### 19.3 Un diseño "más básico"
 
-- **Paleta neutra:** `--bg #F8FAFC`, `--surface #FFFFFF`, `--border #E2E8F0`, `--text #0F172A`, `--text-muted #475569`, `--brand #0F172A` (sidebar), `--accent` = un solo color de marca con contraste AA sobre blanco (comprueba con `contrast()` de `lib/color.js`). Ajusta `--focus-ring` al nuevo acento.
+- **Paleta neutra:** `--bg #F8FAFC`, `--surface #FFFFFF`, `--border #E2E8F0`, `--text #0F172A`, `--text-muted #475569`, `--brand #0F172A` (encabezado), `--accent` = un solo color de marca con contraste AA sobre blanco (comprueba con `contrast()` de `lib/color.js`). Ajusta `--focus-ring` al nuevo acento.
 - **Tipografía única:** solo Inter (o la fuente del sistema): `--font-display: var(--font-sans)`. Quita `text-transform: uppercase` de `.btn` si quieres botones más sobrios.
 - **Bordes suaves otra vez:** `--radius-sm: 6px; --radius: 10px; --radius-lg: 14px; --radius-pill: 999px` y `--shadow-1: 0 1px 2px rgba(0,0,0,.06)`.
-- **Sidebar claro** (opcional): `--brand: var(--surface)`, `--brand-contrast: var(--text)`, `--brand-muted: var(--text-muted)`, `--brand-2/3` en grises claros, y añade `border-right` a `.sidebar`.
+- **Encabezado claro** (opcional): `--brand: var(--surface)`, `--brand-contrast: var(--text)`, `--brand-muted: var(--text-muted)`, `--brand-2/3` en grises claros, y añade `border-bottom` a `.modtabs`.
 - Conserva la estructura (espaciado de 4 px, z-index, tamaños de modal, `--topbar-h`): es lo que mantiene todo alineado.
 
 ---
@@ -589,7 +617,7 @@ Objetivo: quedarte con **el esqueleto** (layout, shells, componentes, hooks, ser
 
 ### Añadir un submódulo
 
-Añade un hijo en `children` del módulo en `navigation.js`, más su ruta. Aparece solo en el sidebar, la fila 2 del topbar y la paleta.
+Añade un hijo en `children` del módulo en `navigation.js`, más su ruta. Aparece solo en el grupo *Ir a* de la cinta, en la ruta y en la paleta.
 
 ### Añadir un modal de creación rápida
 
@@ -605,4 +633,4 @@ Crea `pages/settings/XSettings.jsx` con `SettingsHeader` + `SettingsForm` + `Set
 
 ### Añadir una columna que solo cabe en pantallas anchas
 
-`{ key: 'service', header: …, hide: 'xl' }` en la tabla. Se mostrará cuando el contenido mida ≥ 960 px, por ejemplo al ocultar el sidebar.
+`{ key: 'service', header: …, hide: 'xl' }` en la tabla. Se mostrará cuando el contenido mida ≥ 960 px, por ejemplo en una pantalla ancha.

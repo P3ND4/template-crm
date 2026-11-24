@@ -8,53 +8,41 @@ import { conversationsService, lookupService } from '../../services/index.js';
 import { QuickActionsProvider } from '../quick/QuickActionsProvider.jsx';
 import CommandPalette from './CommandPalette.jsx';
 import AssistantLauncher from '../ai/AssistantLauncher.jsx';
-import Sidebar from './Sidebar.jsx';
-import Topbar from './Topbar.jsx';
-import { useActiveModule } from './ModuleNav.jsx';
+import Topbar, { useActiveModule } from './Topbar.jsx';
 import cx from '../../lib/cx.js';
 import { NoAccess, ViewAsBanner } from './Access.jsx';
 import PwaStatus from './PwaStatus.jsx';
 import AddressBar, { CrumbsProvider } from './AddressBar.jsx';
 import { FillProvider } from './FillPage.jsx';
+import { RibbonProvider } from './Ribbon.jsx';
 import { useSession } from '../../app/SessionProvider.jsx';
 
-const COLLAPSE_KEY = 'app.sidebarCollapsed';
+const COLLAPSE_KEY = 'app.ribbonCollapsed';
 const readCollapsed = () => { try { return localStorage.getItem(COLLAPSE_KEY) === '1'; } catch { return false; } };
 
+/**
+ * App shell: top navigation (title bar · module tabs · ribbon) over the content. No sidebar.
+ * See Topbar.jsx and Ribbon.jsx.
+ */
 export default function AppLayout() {
-  const [navOpen, setNavOpen] = useState(false);
   const [fill, setFill] = useState(false); // current page fits the window (see FillPage.jsx)
-  const [collapsed, setCollapsed] = useState(readCollapsed);
+  const [collapsed, setCollapsed] = useState(readCollapsed); // ribbon collapsed to the tabs only
   const [searchOpen, setSearchOpen] = useState(false);
-  // Animations run only after the user toggles (not on first paint with a remembered state).
-  const [navAnim, setNavAnim] = useState(false);
   const appRef = useRef(null);
   usePullToRefresh(appRef);
-  const collapsedRef = useRef(collapsed);
-  collapsedRef.current = collapsed;
-  const toggleCollapsed = useCallback(() => {
-    const wasCollapsed = collapsedRef.current;
-    const hadFocus = document.activeElement?.closest?.('.sidebar__toggle, .topbar__expand');
-    setNavAnim(true);
-    setCollapsed(!wasCollapsed);
-    // Keep keyboard focus on the control that undoes the action (the old one disappears).
-    if (hadFocus) requestAnimationFrame(() => document.querySelector(wasCollapsed ? '.sidebar__toggle' : '.topbar__expand')?.focus());
-  }, []);
   const location = useLocation();
 
-  useEffect(() => { setNavOpen(false); }, [location.pathname]);
+  const toggleCollapsed = useCallback(() => setCollapsed((c) => !c), []);
   useEffect(() => { try { localStorage.setItem(COLLAPSE_KEY, collapsed ? '1' : '0'); } catch { /* ignore */ } }, [collapsed]);
   useHotkey('mod+k', () => setSearchOpen((o) => !o));
-  // Ctrl/⌘+B toggles the sidebar — ignored while typing (inputs, text areas, rich text).
+  // Ctrl/⌘+B shows / hides the ribbon — ignored while typing (inputs, text areas, rich text).
   useHotkey('mod+b', () => toggleCollapsed(), { allowInInputs: false });
 
   const { data: unreadData } = useResource(() => conversationsService.list({ where: { unread: { gt: 0 } }, pageSize: 50 }), []);
   const unread = (unreadData?.items || []).map((c) => ({ ...c, contactName: lookupService.contact(c.contactId)?.name }));
   const closeSearch = useCallback(() => setSearchOpen(false), []);
-  const closeNav = useCallback(() => setNavOpen(false), []);
   const counts = { unread: unread.reduce((a, c) => a + c.unread, 0) };
   const activeModule = useActiveModule();
-  const hasSubmodules = Boolean(activeModule?.children);
   const { access } = useSession();
   // Module-level permission gate (role preview in Settings → Users & roles).
   const blocked = access(activeModule?.id ?? (location.pathname === '/' ? 'dashboard' : null)) === 'none';
@@ -62,38 +50,33 @@ export default function AppLayout() {
   return (
     <QuickActionsProvider>
       <CrumbsProvider>
-      <FillProvider onChange={setFill}>
-        <div ref={appRef} className={cx('app', fill && 'is-fill', collapsed && 'is-collapsed', hasSubmodules && 'has-subbar', navAnim && 'nav-anim')}>
-          {/* Pull-to-refresh indicator (touch only): sits under the topbar, which never moves. */}
-          <div className="ptr" aria-hidden="true"><span className="ptr__spinner"><RefreshCw /></span></div>
-          <a className="sr-only" href="#main">Skip to content</a>
-          <Sidebar
-            open={navOpen}
-            collapsed={collapsed}
-            onClose={closeNav}
-            onToggleCollapse={toggleCollapsed}
-            counts={counts}
-          />
-          <div className="main">
-            <Topbar
-              onOpenNav={() => setNavOpen(true)}
-              onToggleCollapse={toggleCollapsed}
-              onOpenSearch={() => setSearchOpen(true)}
-              unread={unread}
-              counts={counts}
-            />
-            <main id="main" className="content" tabIndex={-1}>
-              <AddressBar />
-              <ViewAsBanner />
-              {blocked ? <NoAccess module={activeModule} /> : <Outlet />}
-            </main>
-          </div>
-          <CommandPalette open={searchOpen} onClose={closeSearch} />
-          <AssistantLauncher />
-          <PwaStatus />
-          <ScrollRestoration />
-        </div>
-      </FillProvider>
+        <FillProvider onChange={setFill}>
+          <RibbonProvider>
+            <div ref={appRef} className={cx('app', fill && 'is-fill', collapsed && 'is-ribbon-collapsed')}>
+              {/* Pull-to-refresh indicator (touch only): sits under the header, which never moves. */}
+              <div className="ptr" aria-hidden="true"><span className="ptr__spinner"><RefreshCw /></span></div>
+              <a className="sr-only" href="#main">Skip to content</a>
+              <div className="main">
+                <Topbar
+                  onOpenSearch={() => setSearchOpen(true)}
+                  unread={unread}
+                  counts={counts}
+                  collapsed={collapsed}
+                  onToggleCollapse={toggleCollapsed}
+                />
+                <main id="main" className="content" tabIndex={-1}>
+                  <AddressBar />
+                  <ViewAsBanner />
+                  {blocked ? <NoAccess module={activeModule} /> : <Outlet />}
+                </main>
+              </div>
+              <CommandPalette open={searchOpen} onClose={closeSearch} />
+              <AssistantLauncher />
+              <PwaStatus />
+              <ScrollRestoration />
+            </div>
+          </RibbonProvider>
+        </FillProvider>
       </CrumbsProvider>
     </QuickActionsProvider>
   );

@@ -1,196 +1,122 @@
 /* =========================================================================
-   App layout (sidebar, topbar, content) + hybrid form shells (modal / page)
-   Mobile-first: off-canvas sidebar < 1024px, persistent ≥ 1024px.
+   App layout (top navigation: title bar · module tabs · ribbon, then content) + form shells.
+   No sidebar. Phones: the header is fixed and its rows scroll sideways.
    ========================================================================= */
 
 .app { min-height: 100vh; min-height: 100dvh; }
 
-/* ---------- Sidebar ---------- */
-.sidebar {
-  position: fixed; inset: 0 auto 0 0; z-index: var(--z-sidebar);
-  width: min(var(--sidebar-w), 86vw);
-  display: flex; flex-direction: column;
-  background: var(--brand); color: var(--brand-contrast);
-  transform: translateX(-100%); transition: transform var(--transition), width var(--transition);
-}
-.sidebar.is-open { transform: none; box-shadow: var(--shadow-3); }
-.sidebar-scrim { position: fixed; inset: 0; z-index: calc(var(--z-sidebar) - 1); background: rgba(0, 0, 0, .45); animation: fade 140ms ease-out; }
-/* Mobile drawer sits ABOVE the sticky topbar (and its scrim covers the topbar too). */
-@media (max-width: 1023px) {
-  .sidebar { z-index: calc(var(--z-topbar) + 20); }
-  .sidebar-scrim { z-index: calc(var(--z-topbar) + 10); }
-}
-
-.sidebar__brand { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); height: var(--topbar-row-h); padding: 0 var(--sp-4) 0 var(--sp-5); flex: none; }
-.wordmark { font-family: var(--font-display); font-weight: var(--fw-semibold); font-size: 21px; letter-spacing: -0.01em; color: var(--brand-contrast); white-space: nowrap; text-decoration: none; }
-.wordmark:hover { text-decoration: none; }
-.wordmark span { color: var(--accent); }
-.wordmark small { font-family: var(--font-sans); font-size: 10px; font-weight: var(--fw-semibold); letter-spacing: .14em; color: var(--brand-muted); margin-left: 8px; vertical-align: 3px; }
-
-.org-switch {
-  margin: 0 var(--sp-3) var(--sp-2); display: flex; align-items: center; gap: var(--sp-2); padding: 8px 10px;
-  border: 1px solid var(--brand-3); border-radius: var(--radius); background: transparent; color: var(--brand-contrast); text-align: left; width: calc(100% - 2 * var(--sp-3));
-}
-.org-switch:hover { background: var(--brand-2); }
-.org-switch__name { flex: 1; min-width: 0; font-size: var(--fs-13); font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.org-switch__plan { font-size: 11px; color: var(--brand-muted); }
-.org-switch svg { width: 16px; height: 16px; color: var(--brand-muted); flex: none; }
-
-.nav { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: var(--sp-2) var(--sp-3) var(--sp-4); }
-.nav__group + .nav__group { margin-top: var(--sp-1); }
-.nav__link {
-  display: flex; align-items: center; gap: var(--sp-3); min-height: 38px; padding: 0 var(--sp-3);
-  border-radius: var(--radius-sm); color: var(--brand-muted); font-size: var(--fs-14); font-weight: var(--fw-medium);
-  text-decoration: none; white-space: nowrap; border: 0; background: none; width: 100%; text-align: left;
-}
-.nav__link:hover { background: var(--brand-2); color: var(--brand-contrast); text-decoration: none; }
-.nav__link.active { background: var(--brand-3); color: var(--brand-contrast); box-shadow: inset 4px 0 0 var(--accent); }
-.nav__link.active > svg:first-child { color: var(--accent); }
-.nav__link svg { width: 18px; height: 18px; flex: none; }
-.nav__link .chev { margin-left: auto; width: 14px; height: 14px; transition: transform var(--transition); }
-.nav__link[aria-expanded='true'] .chev { transform: rotate(90deg); }
-.nav__label { overflow: hidden; text-overflow: ellipsis; }
-.nav__sub { margin: 2px 0 var(--sp-2) 21px; padding-left: var(--sp-3); border-left: 1px solid var(--brand-3); display: flex; flex-direction: column; gap: 1px; }
-.nav__sub .nav__link { min-height: 32px; font-size: var(--fs-13); padding: 0 var(--sp-3); }
-.nav__sub .nav__link.active { background: var(--brand-2); color: var(--brand-contrast); box-shadow: inset 4px 0 0 var(--accent); }
-.nav__badge { margin-left: auto; min-width: 20px; height: 18px; padding: 0 6px; border-radius: 0; background: var(--accent); color: #fff; font-size: 11px; font-weight: var(--fw-semibold); display: grid; place-items: center; }
-
-.nav__bottom { margin-top: auto; padding-top: var(--sp-3); }
-.nav > .nav__link + .nav__group, .nav > .nav__group + .nav__link { margin-top: var(--sp-1); }
-
-/* Desktop: persistent sidebar. Collapsing hides it completely (slides out) and the modules move to the topbar. */
-@media (min-width: 1024px) {
-  .sidebar { transform: none; width: var(--sidebar-w); transition: transform var(--nav-dur) var(--nav-ease), visibility 0s linear 0s; }
-  .sidebar-scrim { display: none; }
-  .app.is-collapsed .sidebar { transform: translateX(-100%); visibility: hidden; transition: transform var(--nav-dur) var(--nav-ease), visibility 0s linear var(--nav-dur); }
-}
-.app { --nav-dur: 300ms; --nav-ease: cubic-bezier(.2, .7, .3, 1); }
-@media (prefers-reduced-motion: reduce) { .app { --nav-dur: 1ms; } }
-
 /* ---------- Main column ---------- */
-.main { min-width: 0; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; transition: padding-left var(--nav-dur) var(--nav-ease); }
-@media (min-width: 1024px) {
-  .main { padding-left: var(--sidebar-w); }
-  .app.is-collapsed .main { padding-left: 0; }
-}
+.main { min-width: 0; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
 
-/* ---------- Topbar ----------
-   Phone/tablet: menu · module name · actions (+ submodule text tabs).
-   Desktop with sidebar: wide search · actions (nothing repeated from the sidebar).
-   Desktop with sidebar hidden: expand · G. · module icons · search · actions (+ submodules row). */
-.app { --topbar-h: var(--topbar-row-h); }
-.app.has-subbar { --topbar-h: calc(var(--topbar-row-h) + var(--subbar-h)); }
-@media (min-width: 1024px) {
-  .app.has-subbar:not(.is-collapsed) { --topbar-h: var(--topbar-row-h); }
-  .app:not(.is-collapsed) .subbar { display: none; }
-}
-
+/* ---------- Header: title bar · module tabs · ribbon ----------
+   --topbar-h is measured at runtime (Topbar.jsx → MeasureHeight); this is only the first-paint guess. */
+.app { --topbar-h: 128px; --nav-ease: cubic-bezier(.2, .7, .3, 1); }
 .topbar {
   position: sticky; top: 0; z-index: var(--z-topbar);
-  display: flex; flex-direction: column;
-  background: color-mix(in srgb, var(--bg) 90%, transparent);
-  backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; min-width: 0;
+  background: var(--brand); color: var(--brand-contrast);
 }
-.topbar__row { height: var(--topbar-row-h); display: flex; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-3) 0 var(--sp-2); min-width: 0; }
-.topbar__menu { display: inline-grid; flex: none; }
-.topbar__expand, .topbar__brand { display: none; flex: none; }
-.topbar__title { flex: 1 1 auto; min-width: 0; margin: 0 0 0 4px; font-family: var(--font-display); font-weight: var(--fw-semibold); font-size: var(--fs-16); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.topbar__brand { font-family: var(--font-display); font-weight: var(--fw-semibold); font-size: 22px; color: var(--text); text-decoration: none; padding: 0 6px 0 2px; letter-spacing: -0.01em; }
-.topbar__brand span { color: var(--accent); }
-.topbar__brand:hover { text-decoration: none; }
-.modnav { display: none !important; }
-@media (min-width: 1024px) {
-  .topbar__menu, .topbar__title { display: none; }
-  .topbar__row { padding: 0 var(--sp-6) 0 var(--sp-6); }
-  .app.is-collapsed .topbar__row { padding-left: var(--sp-3); }
-  .app.is-collapsed .topbar__expand { display: inline-grid; }
-  .app.is-collapsed .topbar__brand { display: inline-block; }
-  .app.is-collapsed .modnav { display: flex !important; }
-}
-/* Fluid hand-off: the sidebar slides out while the module icons slide in one by one. */
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-  .app.nav-anim.is-collapsed .topbar__expand,
-  .app.nav-anim.is-collapsed .topbar__brand { animation: nav-fade-in 260ms var(--nav-ease) both; }
-  .app.nav-anim.is-collapsed .modnav__link { animation: nav-icon-in 360ms var(--nav-ease) both; animation-delay: calc(90ms + var(--i, 0) * 40ms); }
-  .app.nav-anim.is-collapsed .subbar { animation: nav-sub-in 320ms var(--nav-ease) both 140ms; }
-  .app.nav-anim:not(.is-collapsed) .search-trigger { animation: nav-fade-in 260ms var(--nav-ease) both; }
-}
-@keyframes nav-fade-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes nav-icon-in { from { opacity: 0; transform: translateX(-14px) scale(.92); } to { opacity: 1; transform: none; } }
-@keyframes nav-sub-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.titlebar, .modtabs { --focus-ring: 0 0 0 2px var(--brand-contrast); }
 
-/* Modules (same as sidebar). Scrolls horizontally when space runs out; never wraps or overflows the page. */
-.modnav {
-  flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 2px; height: 100%;
-  overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
-          mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+/* Title bar */
+.titlebar { height: 48px; display: flex; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-3) 0 var(--sp-2); min-width: 0; }
+.titlebar__history { display: flex; gap: 2px; flex: none; }
+.tb-btn {
+  position: relative; height: 34px; min-width: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 8px;
+  border: 0; background: transparent; color: var(--brand-contrast); border-radius: var(--radius-sm); cursor: pointer; font-size: var(--fs-13); font-weight: var(--fw-medium); white-space: nowrap;
 }
-.modnav::-webkit-scrollbar { display: none; }
-.modnav__link {
-  position: relative; display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; flex: none;
-  border-radius: var(--radius-sm); color: var(--text-muted); font-size: var(--fs-14); font-weight: var(--fw-medium); white-space: nowrap; text-decoration: none;
-}
-.modnav__link svg { width: 17px; height: 17px; flex: none; }
-.modnav__link:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
-.modnav__link.active { color: var(--text); background: var(--surface); box-shadow: inset 0 0 0 1px var(--border), inset 0 -2px 0 var(--accent); }
-.modnav__link.active svg { color: var(--accent); }
-@media (max-width: 1279px) { .modnav__link { padding: 0 10px; } }
+.tb-btn svg { width: 17px; height: 17px; flex: none; }
+.tb-btn:hover:not(:disabled) { background: var(--brand-2); }
+.tb-btn:disabled { opacity: .35; cursor: default; }
+.tb-btn--label { background: var(--brand-2); padding: 0 12px; }
+.tb-btn--label:hover:not(:disabled) { background: var(--brand-3); }
+.tb-btn--label svg { color: color-mix(in srgb, var(--accent) 50%, #fff); }
+.tb-btn__dot { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: #FF6B5B; }
+.tb-assistant { display: none; }
+@media (min-width: 1024px) { .tb-assistant { display: inline-flex; } }
+.titlebar__brand { flex: none; margin: 0 var(--sp-2) 0 var(--sp-1); font-family: var(--font-display); font-weight: var(--fw-semibold); font-size: 19px; letter-spacing: -0.01em; color: var(--brand-contrast); text-decoration: none; white-space: nowrap; }
+.titlebar__brand span { color: color-mix(in srgb, var(--accent) 50%, #fff); }
+.titlebar__brand small { margin-left: 6px; font-family: var(--font-sans); font-size: 10px; font-weight: var(--fw-semibold); letter-spacing: .14em; color: var(--brand-muted); }
+.titlebar__brand:hover { text-decoration: none; color: var(--brand-contrast); }
+@media (max-width: 479px) { .titlebar__brand small { display: none; } }
+.titlebar__actions { margin-left: auto; display: flex; align-items: center; gap: 4px; flex: none; }
+.user-btn { display: flex; align-items: center; gap: 4px; padding: 3px; border: 0; background: none; color: var(--brand-contrast); border-radius: var(--radius-pill); }
+.user-btn:hover { background: var(--brand-2); }
 
-/* Submodules of the active module */
-.subbar {
-  height: var(--subbar-h); display: flex; align-items: stretch; gap: 2px; padding: 0 var(--sp-3);
-  border-top: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 70%, transparent);
-  overflow-x: auto; scrollbar-width: none;
-}
-.subbar::-webkit-scrollbar { display: none; }
-@media (min-width: 1024px) { .subbar { padding: 0 var(--sp-6); } }
-.subbar__link {
-  position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 0 12px; flex: none;
-  color: var(--text-muted); font-size: var(--fs-13); font-weight: var(--fw-medium); white-space: nowrap; text-decoration: none;
-}
-.subbar__link svg { width: 15px; height: 15px; }
-@media (max-width: 1023px) { .subbar__link svg { display: none; } .subbar__link { padding: 0 10px; } }
-.subbar__link:hover { color: var(--text); text-decoration: none; }
-.subbar__link.active { color: var(--text); }
-.subbar__link.active svg { color: var(--accent); }
-.subbar__link.active::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 0; height: 2px; border-radius: 0; background: var(--accent); }
-.subbar__link .nav__badge { margin-left: 2px; }
-
-/* Actions */
-.topbar__actions { display: flex; align-items: center; gap: 4px; flex: none; }
+/* Search (opens the command palette) */
 .search-trigger {
-  display: inline-flex; align-items: center; gap: var(--sp-2); height: 36px; padding: 0 10px;
-  border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text-subtle); font-size: var(--fs-14); white-space: nowrap;
+  flex: none; margin-left: auto; display: inline-flex; align-items: center; gap: var(--sp-2); height: 32px; padding: 0 9px;
+  border: 1px solid var(--brand-3); border-radius: var(--radius-sm); background: var(--brand-2); color: var(--brand-muted); font-size: var(--fs-14); white-space: nowrap;
 }
-.search-trigger:hover { border-color: var(--border-strong); color: var(--text-muted); }
+.search-trigger:hover { border-color: var(--brand-muted); color: var(--brand-contrast); }
 .search-trigger svg { width: 16px; height: 16px; flex: none; }
 .search-trigger .label, .search-trigger kbd { display: none; }
-.search-trigger { flex: none; margin-left: auto; }
-@media (min-width: 1024px) {
-  /* Sidebar visible: the search takes the free space on the left of the topbar. */
-  .app:not(.is-collapsed) .search-trigger { flex: 0 1 460px; margin-left: 0; margin-right: auto; padding: 0 8px 0 12px; }
-  .app:not(.is-collapsed) .search-trigger .label, .app:not(.is-collapsed) .search-trigger kbd { display: inline-flex; }
-  .app:not(.is-collapsed) .search-trigger .label { flex: 1; }
-  .app.is-collapsed .search-trigger { margin-left: var(--sp-2); }
+.search-trigger kbd { background: var(--brand-3); border-color: var(--brand-3); color: var(--brand-contrast); }
+.search-trigger + .titlebar__actions { margin-left: 4px; }
+@media (min-width: 768px) {
+  .search-trigger { flex: 0 1 440px; margin-left: var(--sp-4); padding: 0 8px 0 12px; }
+  .search-trigger .label, .search-trigger kbd { display: inline-flex; }
+  .search-trigger .label { flex: 1; }
+  .search-trigger + .titlebar__actions { margin-left: auto; }
 }
-@media (min-width: 1536px) { .app.is-collapsed .search-trigger { padding: 0 8px 0 12px; } .app.is-collapsed .search-trigger .label, .app.is-collapsed .search-trigger kbd { display: inline-flex; } .app.is-collapsed .search-trigger .label { min-width: 72px; } }
-.topbar__new .btn-label { display: none; }
-.topbar__new { padding: 0 10px; }
-@media (min-width: 1280px) { .topbar__new .btn-label { display: inline; } .topbar__new { padding: 0 var(--sp-4); } }
-.user-btn { display: flex; align-items: center; gap: var(--sp-2); padding: 3px; border: 0; background: none; border-radius: var(--radius-pill); }
-.user-btn:hover { background: var(--surface-2); }
-@media (max-width: 479px) { .topbar__actions .icon-btn { width: 34px; } .topbar__row { gap: 4px; } }
 
-/* Sidebar collapse toggle (desktop only) */
-.sidebar__toggle { display: none !important; }
-@media (min-width: 1024px) {
-  .sidebar__toggle { display: inline-grid !important; flex: none; color: var(--brand-muted); }
-  .sidebar__toggle:hover { background: var(--brand-2); color: var(--brand-contrast); }
-  /* Toggle sits in the top-left corner, exactly where the topbar's expand button appears. */
-  .sidebar__brand { justify-content: flex-start; padding-left: var(--sp-3); }
-  .sidebar__brand .wordmark { margin-left: 2px; }
+/* Module tabs (+ contextual tab of the record on screen) */
+.modtabs { display: flex; align-items: stretch; min-width: 0; padding: 0 var(--sp-2) 0 var(--sp-1); }
+.modtabs__list { display: flex; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+.modtabs__list::-webkit-scrollbar { display: none; }
+.modtab {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px;
+  border: 0; background: transparent; color: var(--brand-muted); font: inherit; font-size: var(--fs-14); font-weight: var(--fw-medium);
+  text-decoration: none; white-space: nowrap; cursor: pointer;
 }
+.modtab:hover { color: var(--brand-contrast); background: var(--brand-2); text-decoration: none; }
+.modtab.is-module { color: var(--brand-contrast); font-weight: var(--fw-semibold); }
+.modtab.is-current { background: var(--surface); color: var(--text); box-shadow: inset 0 2px 0 var(--accent); }
+.modtab--context { margin-left: var(--sp-2); color: var(--brand-contrast); font-weight: var(--fw-semibold); background: color-mix(in srgb, var(--accent) 40%, var(--brand)); }
+.modtab--context:hover { background: color-mix(in srgb, var(--accent) 55%, var(--brand)); }
+.modtab--context.is-current { background: var(--accent-soft); color: var(--accent-strong); box-shadow: inset 0 2px 0 var(--accent); }
+.modtab__badge { padding: 0 5px; background: var(--accent); color: var(--accent-contrast); font-size: 11px; font-weight: var(--fw-bold); line-height: 18px; }
+.modtab.is-current .modtab__badge { background: var(--accent); }
+.modtabs__pin { flex: none; width: 36px; display: grid; place-items: center; border: 0; background: transparent; color: var(--brand-muted); cursor: pointer; }
+.modtabs__pin:hover { color: var(--brand-contrast); background: var(--brand-2); }
+.modtabs__pin svg { width: 16px; height: 16px; }
+/* Ribbon hidden: the current tab is underlined instead of joined to the ribbon. */
+.app.is-ribbon-collapsed .modtab.is-current { background: transparent; color: var(--brand-contrast); box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--accent) 60%, #fff); }
+.app.is-ribbon-collapsed .modtab--context.is-current { background: color-mix(in srgb, var(--accent) 40%, var(--brand)); }
+
+/* Ribbon (simplified: one line, scrolls sideways when it doesn't fit) */
+.ribbon {
+  display: flex; align-items: center; min-height: 44px; padding: 0 var(--sp-3); gap: 0;
+  background: var(--surface); color: var(--text); border-bottom: 1px solid var(--border);
+  overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin;
+}
+.ribbon__slot, .ribbon__page { display: flex; align-items: center; gap: 2px; flex: none; }
+.ribbon__page:not(:empty) { padding-left: var(--sp-2); }
+.ribbon__group { display: flex; align-items: center; gap: 2px; flex: none; padding: 0 var(--sp-2); border-right: 1px solid var(--border); min-height: 30px; }
+.ribbon > .ribbon__group:first-child, .ribbon__slot > .ribbon__group:first-child { padding-left: 0; }
+.ribbon__page > .ribbon__group:last-child, .ribbon__slot > .ribbon__group:last-child { border-right: 0; }
+.ribbon__label { margin-right: 4px; font-size: 11px; font-weight: var(--fw-semibold); letter-spacing: .08em; text-transform: uppercase; color: var(--text-subtle); white-space: nowrap; }
+.rbtn {
+  flex: none; height: 34px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px;
+  border: 0; background: transparent; color: var(--text); font: inherit; font-size: var(--fs-13); font-weight: var(--fw-medium);
+  white-space: nowrap; text-decoration: none; border-radius: var(--radius-sm); cursor: pointer;
+}
+.rbtn svg { width: 16px; height: 16px; flex: none; color: var(--text-muted); }
+.rbtn:hover { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--border-strong); color: var(--text); text-decoration: none; }
+.rbtn.active, .rbtn[aria-pressed='true'] { background: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent); }
+.rbtn.active svg, .rbtn[aria-pressed='true'] svg { color: var(--accent); }
+.rbtn__badge { padding: 0 5px; background: var(--accent); color: var(--accent-contrast); font-size: 11px; font-weight: var(--fw-bold); line-height: 18px; }
+/* Page buttons moved into the ribbon (contextual tab, page controls) look like ribbon buttons. */
+.ribbon .btn {
+  --btn-bg: transparent; --btn-border: transparent; --btn-hover: var(--surface-2); --btn-ring: var(--border-strong);
+  min-height: 34px; height: 34px; padding: 0 10px; flex: none;
+  text-transform: none; letter-spacing: 0; font-weight: var(--fw-medium); font-size: var(--fs-13);
+}
+.ribbon .btn svg { color: var(--text-muted); }
+.ribbon .btn--primary { --btn-bg: var(--accent); --btn-fg: var(--accent-contrast); --btn-hover: var(--accent-hover); --btn-ring: rgba(0, 0, 0, .28); margin: 0 4px; }
+.ribbon .btn--primary svg { color: inherit; }
+.ribbon .btn[aria-pressed='true'] { --btn-bg: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent); }
+.ribbon .btn[aria-pressed='true'] svg { color: var(--accent); }
 
 /* ---------- Content ---------- */
 .content { container: page / inline-size; width: 100%; max-width: var(--content-max); margin: 0 auto; padding: var(--sp-5) var(--sp-4) 96px; flex: 1; min-width: 0; } /* bottom room for the floating assistant */
@@ -311,11 +237,6 @@
 .chart-box { height: 260px; width: 100%; min-width: 0; }
 .palette__input input:focus-visible { box-shadow: none; }
 
-/* Below 1280px inactive modules collapse to icons (label kept for screen readers + tooltip); the active one keeps its label. */
-@media (max-width: 1279px) {
-  .modnav__link:not(.active) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .modnav__link { padding: 0 9px; }
-}
 
 /* ---------- Auth (sign in / reset password) ---------- */
 .auth { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; background: var(--bg); }
@@ -374,7 +295,6 @@
    The topbar stays still; the page content slides down under it and a spinner fades in. */
 .ptr { position: fixed; left: 50%; top: var(--topbar-h); z-index: calc(var(--z-topbar) - 1); width: 40px; height: 40px; margin-left: -20px; pointer-events: none;
   opacity: 0; transform: translateY(calc(var(--ptr, 0px) - 44px)); }
-@media (min-width: 1024px) { .ptr { left: calc(50% + var(--sidebar-w) / 2); } .app.is-collapsed .ptr { left: 50%; } }
 .ptr__spinner { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-2); color: var(--text-muted); }
 .ptr__spinner svg { width: 18px; height: 18px; transform: rotate(calc(var(--ptr, 0px) * 3)); }
 .app.is-pulling .ptr, .app.is-ptr-refreshing .ptr { opacity: 1; }
@@ -392,14 +312,10 @@
    - Solid topbar background on phones (backdrop blur stutters while scrolling on iOS).
    - Safe areas: notch (landscape) and home indicator, with viewport-fit=cover.
    ========================================================================= */
-.app { --topbar-h: calc(var(--topbar-row-h) + var(--safe-top)); }
-.app.has-subbar { --topbar-h: calc(var(--topbar-row-h) + var(--subbar-h) + var(--safe-top)); }
-@media (min-width: 1024px) { .app.has-subbar:not(.is-collapsed) { --topbar-h: calc(var(--topbar-row-h) + var(--safe-top)); } }
 .topbar { padding: var(--safe-top) var(--safe-right) 0 var(--safe-left); }
 @media (max-width: 1023px) {
-  .topbar { position: fixed; top: 0; left: 0; right: 0; background: var(--bg); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .topbar { position: fixed; top: 0; left: 0; right: 0; }
   .main { padding-top: var(--topbar-h); }
-  .sidebar { padding: var(--safe-top) 0 var(--safe-bottom) var(--safe-left); }
 }
 .content { padding-left: max(var(--sp-4), var(--safe-left)); padding-right: max(var(--sp-4), var(--safe-right)); padding-bottom: calc(96px + var(--safe-bottom)); }
 @media (min-width: 768px) { .content { padding-left: max(var(--sp-6), var(--safe-left)); padding-right: max(var(--sp-6), var(--safe-right)); } }
@@ -411,8 +327,8 @@
    Installed desktop app with the title bar hidden (Window Controls Overlay).
    Windows/Linux draw minimize/maximize/close over the top-right corner (macOS: traffic lights
    top-left). env(titlebar-area-*) tells where the free strip is: reserve the rest so the user
-   menu (right) and the sidebar/expand button (left) are never covered, and let empty parts of
-   the topbar drag the window.
+   menu (right) and the history buttons (left) are never covered, and let empty parts of the
+   title bar drag the window.
    ========================================================================= */
 @media (display-mode: window-controls-overlay) {
   .app {
@@ -421,31 +337,23 @@
     --wco-left: var(--wco-x);
     --wco-right: max(0px, calc(100vw - var(--wco-x) - var(--wco-w)));
   }
-  .topbar__row { padding-right: calc(var(--wco-right) + var(--sp-3)); -webkit-app-region: drag; app-region: drag; }
-  .sidebar__brand { padding-left: max(var(--sp-3), calc(var(--wco-left) + var(--sp-2))); -webkit-app-region: drag; app-region: drag; }
-  .app.is-collapsed .topbar__row { padding-left: max(var(--sp-3), calc(var(--wco-left) + var(--sp-2))); }
-  .topbar__row :is(a, button, input, select, label, .modnav, .menu, .topbar__actions),
-  .sidebar__brand :is(a, button) { -webkit-app-region: no-drag; app-region: no-drag; }
+  .titlebar {
+    height: max(48px, env(titlebar-area-height, 48px));
+    padding-left: max(var(--sp-2), calc(var(--wco-left) + var(--sp-2)));
+    padding-right: calc(var(--wco-right) + var(--sp-3));
+    -webkit-app-region: drag; app-region: drag;
+  }
+  .titlebar :is(a, button, input, label, .menu, .titlebar__actions, .titlebar__history) { -webkit-app-region: no-drag; app-region: no-drag; }
 }
 
-/* Windows 10 focus rectangle on the dark sidebar and sign-in panel */
-.sidebar, .auth__brand { --focus-ring: 0 0 0 2px var(--brand-contrast); }
+/* Windows 10 focus rectangle on the dark sign-in panel */
+.auth__brand { --focus-ring: 0 0 0 2px var(--brand-contrast); }
 
 /* ===================== Explorer-style navigation ===================== */
-/* Address bar: Back · Forward · Up + location path (desktop). Phones keep the page's own Back. */
-.addressbar { display: none; }
-@media (min-width: 1024px) {
-  .addressbar { display: flex; align-items: center; gap: var(--sp-2); margin: 0 0 var(--sp-4); min-width: 0; }
-  .page-shell__nav { display: none; }
-}
-.addressbar__buttons { display: flex; gap: 2px; flex: none; }
-.addressbar__btn {
-  width: 32px; height: 32px; display: grid; place-items: center; border: 0; background: transparent; color: var(--text);
-  border-radius: var(--radius-sm); cursor: pointer;
-}
-.addressbar__btn svg { width: 16px; height: 16px; }
-.addressbar__btn:hover:not(:disabled) { background: var(--surface-3); }
-.addressbar__btn:disabled { color: var(--text-subtle); opacity: .45; cursor: default; }
+/* Location path (module › section › record). Back / Forward / Up are in the title bar, so pages
+   don't show their own Back button. */
+.addressbar { display: flex; align-items: center; margin: 0 0 var(--sp-4); min-width: 0; }
+.page-shell__nav { display: none; }
 .addressbar__path {
   flex: 1; min-width: 0; height: 32px; display: flex; align-items: center; gap: 2px; padding: 0 var(--sp-2);
   list-style: none; margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -465,12 +373,6 @@
 .inline-panel > .form-shell .form-body { overflow: visible; }
 .comms-side .inline-panel .form-header, .comms-side .inline-panel .form-body { padding: var(--sp-3); }
 .comms-side .inline-panel .form-footer { flex-wrap: wrap; }
-.addressbar__assistant {
-  flex: none; height: 32px; display: inline-flex; align-items: center; gap: 8px; padding: 0 12px;
-  border: 0; border-radius: var(--radius-sm); background: var(--surface-3); color: var(--text); font-size: var(--fs-13); font-weight: var(--fw-medium); cursor: pointer;
-}
-.addressbar__assistant svg { width: 16px; height: 16px; color: var(--accent-strong); }
-.addressbar__assistant:hover { box-shadow: inset 0 0 0 2px var(--text-subtle); }
 @media (min-width: 1024px) {
   .ai-fab { display: none; }
   /* No floating button on desktop: the bottom gap matches the sides. */
@@ -506,5 +408,5 @@
   .app.is-fill .dash-panel .chart-box { height: clamp(140px, calc(100dvh - 750px), 360px); }
 }
 /* The address bar already shows where you are: the small module label above page titles goes away on desktop. */
-@media (min-width: 1024px) { .page-head__eyebrow { display: none; } }
+.page-head__eyebrow { display: none; }
 .inline-panel .doc-preview { max-height: 360px; }

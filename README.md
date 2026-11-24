@@ -15,7 +15,7 @@ npm run dev        # http://localhost:5173
 
 ```bash
 npm run qa:audit                 # every route × 10 widths: page overflow + console errors (against npm run preview)
-COLLAPSED=1 npm run qa:audit     # same with the sidebar hidden
+COLLAPSED=1 npm run qa:audit     # same with the ribbon collapsed
 npm run qa:shot -- /crm/leads out.png 1440 900
 npm run icons                    # regenerate PWA icons from the brand mark
 npm run splash                   # regenerate iOS launch screens (prints the <link> tags for index.html)
@@ -48,10 +48,9 @@ All modules are built. Step 8 is the final polish pass.
 ## Try it
 
 - **Sign in**: open the app → `/login` (it looks like production: no demo hints). Accounts and password are in **[`docs/DEMO_ACCOUNTS.md`](docs/DEMO_ACCOUNTS.md)**: one per role (admin, designer, accounting, viewer). User menu → **Sign out**.
-- **Collapse the sidebar** (button in the top-left corner or **Ctrl/⌘ + B**): it slides away, the module icons slide into the topbar with the submodules below, and pages use the extra width (more table columns, more cards per row).
+- **Top navigation (no sidebar)**: title bar (Back · Forward · Up, search, assistant, user), module tabs and a one-line **ribbon** with the module's sections and New actions. Open a lead, invoice or project and a **contextual tab** appears with its actions. **Ctrl/⌘ + B** or the chevron hides the ribbon.
 - **Ctrl/⌘ + K**: global search and command palette.
 - **+ New → Task / Appointment / Note**: quick forms open as **pages** (`/new/task`…), never as floating windows. Save or Cancel returns exactly where you were. Try leaving with changes, Ctrl/⌘+Enter, and the inline validation.
-- **Address bar** (desktop): Back · Forward · Up and the path (CRM › Leads › record), like Windows Explorer.
 - **No page scroll** on Agenda, WhatsApp / SMS, Email and the Dashboard (desktop): the card fills the window and scrolls inside. The Dashboard has three views: Overview · Performance · Activity.
 - **+ New → Lead**: full **page** form with **← Back**. Back returns to the same screen, scroll and filters. If you leave with unsaved changes, it asks first.
 - Dashboard **date range**: stored in the URL (`?range=ytd`).
@@ -70,7 +69,7 @@ All modules are built. Step 8 is the final polish pass.
   - Expenses & POs with receipts and single or bulk approval.
   - Reports: income vs expenses, receivables aging, profitability by project and the annual summary.
 - **Install the app**: user menu → *Install app* (or Settings → My profile → *This device*: install, allow notifications and send a test one).
-- **Settings** (topbar row 2 / sidebar list the 10 sections):
+- **Settings** (the Settings ribbon lists the 10 sections):
   - **Users & roles**: invite (inline panel), change a role inline, deactivate, revoke invitations, and edit the **permission matrix** (no access / view / full per module and role).
   - **View as role**: user menu → *View as role (demo)* or Settings → Users & roles. Try **Viewer**: Finance and AI show a *No access* page, the AI button disappears and Settings is blocked; **Designer** sees Settings read-only.
   - **Taxes & billing**: change the tax rate (e.g. 8.5%) → new estimates use it, existing documents keep the rate they were created with.

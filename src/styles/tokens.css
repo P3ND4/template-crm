@@ -1,7 +1,7 @@
 /*
  * Template CRM — design tokens.
  * Single source of truth for color, type, spacing, radius, shadow, z-index and breakpoints.
- * Default look: Windows 8/10 inspired — square shapes, neutral grays, graphite sidebar, cobalt accent
+ * Default look: Windows 8/10 inspired — square shapes, neutral grays, graphite header, cobalt accent
  * (all text/background pairs WCAG AA).
  * Rebrand by editing this file only (and app/theme.js for the accent presets in Settings).
  */
@@ -18,7 +18,7 @@
   --text-subtle: #6B6B6B;
   --text-inverse: #FFFFFF;
 
-  /* ---- Brand (sidebar, dark surfaces) — graphite ---- */
+  /* ---- Brand (header, dark surfaces) — graphite ---- */
   --brand: #1F1F1F;
   --brand-2: #2B2B2B;        /* hover / raised dark */
   --brand-3: #3A3A3A;
@@ -78,10 +78,7 @@
   --focus-ring: 0 0 0 2px var(--text); /* Windows 10 focus rectangle (follows the theme) */
 
   /* ---- Layout ---- */
-  --sidebar-w: 248px;
-  --topbar-row-h: 60px;
-  --subbar-h: 44px;
-  --topbar-h: 60px; /* overridden on .app: row + subbar when the module has submodules */
+  --topbar-h: 128px; /* header height: measured at runtime on .app (title bar + tabs + ribbon) */
   --content-max: 2400px; /* wide screens use the space: more columns, not bigger margins */
 
   /* ---- Modal sizes (fixed per form type) ---- */
@@ -105,7 +102,6 @@
 
   /* ---- Z-index ---- */
   --z-sticky: 10;
-  --z-sidebar: 30;
   --z-topbar: 40;
   --z-dropdown: 50;
   --z-modal: 100;

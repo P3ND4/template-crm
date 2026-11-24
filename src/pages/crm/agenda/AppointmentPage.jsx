@@ -9,6 +9,7 @@ import useResource from '../../../hooks/useResource.js';
 import { useT } from '../../../i18n/index.jsx';
 import { date, time } from '../../../lib/format.js';
 import { appointmentsService, lookupService } from '../../../services/index.js';
+import { RibbonContext } from '../../../components/layout/Ribbon.jsx';
 
 /** Full appointment detail (page). Quick create/edit happens in the modal. */
 export default function AppointmentPage() {
@@ -44,10 +45,10 @@ export default function AppointmentPage() {
                   <span>· {time(a.start)} – {time(addMinutes(new Date(a.start), a.durationMin))}</span>
                 </div>
               </div>
-              <div className="page-head__actions">
+              <RibbonContext label={t('ribbon.context.appointment')}>
                 <Button icon={Pencil} onClick={() => quick.open('appointment', { appointment: a, onSaved: refetch })}>{t('common.edit')}</Button>
                 <Button icon={Trash2} onClick={() => setConfirm(true)}>{t('common.delete')}</Button>
-              </div>
+              </RibbonContext>
             </div>
             <div className="detail-grid">
               <Card title={t('agenda.details')}>

@@ -8,7 +8,8 @@ import {
 import ChartCard, { LegendItem } from '../../components/charts/ChartCard.jsx';
 import HBarChart from '../../components/charts/HBarChart.jsx';
 import RevenueExpensesChart from '../../components/charts/RevenueExpensesChart.jsx';
-import { Avatar, Badge, Card, DataState, Kpi, SegmentedControl, Skeleton, SkeletonList, Tabs } from '../../components/ui/index.js';
+import { Avatar, Badge, Card, DataState, Kpi, Skeleton, SkeletonList } from '../../components/ui/index.js';
+import { RibbonGroup, RibbonPage } from '../../components/layout/Ribbon.jsx';
 import { useQuickActions } from '../../components/quick/QuickActionsProvider.jsx';
 import { useT } from '../../i18n/index.jsx';
 import useResource from '../../hooks/useResource.js';
@@ -41,22 +42,28 @@ export default function DashboardPage() {
           <h1 className="page-title">{t('dashboard.title')}</h1>
           <p className="page-subtitle">{t('dashboard.subtitle', { range: rangeLabel.toLowerCase() })}</p>
         </div>
-        <div className="page-head__actions">
-          <SegmentedControl
-            label={t('dashboard.range')}
-            value={range}
-            onChange={setRange}
-            options={DASHBOARD_RANGES.map((r) => ({ value: r, label: t(`dashboard.ranges.${r}`) }))}
-          />
-        </div>
       </div>
 
-      <Tabs label={t('dashboard.viewsLabel')} value={view} onChange={setView} tabs={VIEWS.map((v) => ({ id: v, label: t(`dashboard.views.${v}`) }))} />
+      {/* Period and view live in the ribbon (Dashboard tab), not in the page. */}
+      <RibbonPage>
+        <RibbonGroup label={t('ribbon.view')}>
+          <span className="ribbon__label" aria-hidden="true">{t('ribbon.view')}</span>
+          {VIEWS.map((v) => (
+            <button key={v} type="button" className="rbtn" aria-pressed={view === v} onClick={() => setView(v)}>{t(`dashboard.views.${v}`)}</button>
+          ))}
+        </RibbonGroup>
+        <RibbonGroup label={t('dashboard.range')}>
+          <span className="ribbon__label" aria-hidden="true">{t('ribbon.period')}</span>
+          {DASHBOARD_RANGES.map((r) => (
+            <button key={r} type="button" className="rbtn" aria-pressed={range === r} onClick={() => setRange(r)}>{t(`dashboard.ranges.${r}`)}</button>
+          ))}
+        </RibbonGroup>
+      </RibbonPage>
 
       {error ? (
         <Card><DataState error={error} onRetry={refetch} /></Card>
       ) : (
-        <div className="tab-panel fill fill-scroll dash-panel" role="tabpanel">
+        <div className="fill fill-scroll dash-panel" role="region" aria-label={t(`dashboard.views.${view}`)}>
           {view === 'overview' && (<>
           {/* ---------------- KPIs ---------------- */}
           <section aria-label="Key metrics" className="dash-kpis">

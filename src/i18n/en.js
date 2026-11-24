@@ -7,6 +7,17 @@ const en = {
     org: 'Demo Company',
     demoData: 'Demo data',
   },
+  ribbon: {
+    label: '{module} ribbon',
+    goto: 'Go to',
+    new: 'New',
+    collapse: 'Hide the ribbon',
+    expand: 'Show the ribbon',
+    period: 'Period',
+    view: 'View',
+    actions: 'Actions',
+    context: { lead: 'Lead', contact: 'Contact', project: 'Project', opportunity: 'Opportunity', appointment: 'Appointment', estimate: 'Estimate', invoice: 'Invoice' },
+  },
   address: {
     label: 'Location',
     back: 'Back',

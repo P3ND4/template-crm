@@ -859,7 +859,7 @@ label.icon-btn { cursor: pointer; }
 @media print {
   @page { size: letter; margin: 12mm; }
   body { background: #fff !important; }
-  .sidebar, .topbar, .page-shell__nav, .no-print, .toasts, .sidebar-scrim { display: none !important; }
+  .topbar, .addressbar, .page-shell__nav, .no-print, .toasts { display: none !important; }
   .main { padding: 0 !important; }
   .content { padding: 0 !important; max-width: none !important; }
   .doc-layout { display: block !important; }
@@ -913,9 +913,9 @@ label.icon-btn { cursor: pointer; }
 .ai-fab { position: fixed; right: 20px; bottom: 20px; z-index: calc(var(--z-modal) - 10); width: 52px; height: 52px; border-radius: 0; border: 0; background: var(--brand); color: var(--brand-contrast); display: grid; place-items: center; box-shadow: var(--shadow-3); transition: transform var(--transition); }
 .ai-fab:hover { transform: translateY(-2px); }
 .ai-fab svg { width: 24px; height: 24px; color: #7FB2DB; }
-.ai-panel-root { position: fixed; z-index: calc(var(--z-modal) - 5); right: 16px; bottom: 16px; top: calc(var(--topbar-row-h) + 16px); width: min(420px, calc(100vw - 32px)); pointer-events: none; }
+.ai-panel-root { position: fixed; z-index: calc(var(--z-modal) - 5); right: 16px; bottom: 16px; top: calc(var(--topbar-h) + 16px); width: min(420px, calc(100vw - 32px)); pointer-events: none; }
 .ai-panel { pointer-events: auto; height: 100%; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-3); overflow: hidden; animation: modal-in 160ms ease-out; }
-@media (max-width: 479px) { .ai-panel-root { right: 0; left: 0; bottom: 0; top: 64px; width: 100%; } .ai-panel { border-radius: var(--radius-lg) var(--radius-lg) 0 0; } .ai-fab { right: 14px; bottom: 14px; } }
+@media (max-width: 479px) { .ai-panel-root { right: 0; left: 0; bottom: 0; top: var(--topbar-h); width: 100%; } .ai-panel { border-radius: var(--radius-lg) var(--radius-lg) 0 0; } .ai-fab { right: 14px; bottom: 14px; } }
 .assistant { display: flex; flex-direction: column; min-height: 0; flex: 1; background: var(--bg); }
 .assistant-page .assistant { height: calc(100dvh - var(--topbar-h) - 210px); min-height: 460px; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); }
 .assistant__scroll { flex: 1; overflow-y: auto; padding: var(--sp-4); }

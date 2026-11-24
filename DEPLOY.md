@@ -29,13 +29,21 @@ The app is served as static files by Caddy on `$PORT`. There is no Node process 
 4. In **Settings → Networking**, click **Generate Domain** (or add a custom domain).
 5. Every push to the default branch redeploys.
 
+### Deploying a branch other than `main`
+
+Railway deploys one branch per service. To publish a work branch (for example `estilo-windows`):
+
+1. Push the branch to GitHub (GitHub Desktop: switch to the branch → **Publish branch** / **Push origin**).
+2. In the Railway service: **Settings → Source → Branch** and pick the branch. Railway rebuilds right away and on every push to that branch.
+3. To keep `main` online at the same time, create a second service from the same repo (or a second **Environment**) and point it to the other branch.
+
 ## Option B: from your computer, without GitHub
 
 ```bash
 npm i -g @railway/cli
 railway login
 railway init        # create a project (or: railway link)
-railway up          # uploads this folder and builds it with Railpack
+railway up          # uploads this folder AS IT IS NOW (the checked-out branch) and builds it with Railpack
 railway domain      # generate a public URL
 ```
 

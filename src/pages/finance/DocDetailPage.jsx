@@ -11,6 +11,7 @@ import { useT } from '../../i18n/index.jsx';
 import { date, money } from '../../lib/format.js';
 import { financeService } from '../../services/index.js';
 import { API, BASE, TONE } from './DocsListPage.jsx';
+import { RibbonContext } from '../../components/layout/Ribbon.jsx';
 
 /** Estimate / invoice detail: PDF-like preview + status actions + payments (invoice). */
 export default function DocDetailPage({ kind }) {
@@ -46,7 +47,7 @@ export default function DocDetailPage({ kind }) {
                   {d.daysOverdue > 0 && <span style={{ color: 'var(--danger)', fontWeight: 600 }}>· {t('finance.daysLate', { n: d.daysOverdue })}</span>}
                 </div>
               </div>
-              <div className="page-head__actions">
+              <RibbonContext label={t(`ribbon.context.${kind}`)}>
                 <Button icon={Download} onClick={() => window.print()}>{t('finance.actions.pdf')}</Button>
                 {d.status === 'draft' && <Button icon={Pencil} to={`${BASE[kind]}/${d.id}/edit`}>{t('common.edit')}</Button>}
                 {d.status === 'draft' && <Button icon={Trash2} onClick={() => setConfirmDelete(true)}>{t('common.delete')}</Button>}
@@ -64,7 +65,7 @@ export default function DocDetailPage({ kind }) {
                     <Button variant="primary" icon={CircleDollarSign} onClick={() => quick.open('payment', { invoice: d, onSaved: refetch })}>{t('payment.short')}</Button>
                   </>
                 )}
-              </div>
+              </RibbonContext>
             </div>
 
             <div className="doc-layout">
