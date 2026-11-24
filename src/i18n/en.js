@@ -7,6 +7,12 @@ const en = {
     org: 'Demo Company',
     demoData: 'Demo data',
   },
+  address: {
+    label: 'Location',
+    back: 'Back',
+    forward: 'Forward',
+    up: 'Up one level',
+  },
   nav: {
     main: 'Main navigation',
     modules: 'Modules',
@@ -985,6 +991,8 @@ const en = {
     number: 'Enter a valid amount.',
   },
   dashboard: {
+    viewsLabel: 'Dashboard views',
+    views: { overview: 'Overview', performance: 'Performance', activity: 'Activity' },
     title: 'Dashboard',
     subtitle: 'Business overview for {range}',
     range: 'Date range',

@@ -14,6 +14,8 @@ import { useActiveModule } from './ModuleNav.jsx';
 import cx from '../../lib/cx.js';
 import { NoAccess, ViewAsBanner } from './Access.jsx';
 import PwaStatus from './PwaStatus.jsx';
+import AddressBar, { CrumbsProvider } from './AddressBar.jsx';
+import { FillProvider } from './FillPage.jsx';
 import { useSession } from '../../app/SessionProvider.jsx';
 
 const COLLAPSE_KEY = 'app.sidebarCollapsed';
@@ -21,6 +23,7 @@ const readCollapsed = () => { try { return localStorage.getItem(COLLAPSE_KEY) ==
 
 export default function AppLayout() {
   const [navOpen, setNavOpen] = useState(false);
+  const [fill, setFill] = useState(false); // current page fits the window (see FillPage.jsx)
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const [searchOpen, setSearchOpen] = useState(false);
   // Animations run only after the user toggles (not on first paint with a remembered state).
@@ -58,35 +61,40 @@ export default function AppLayout() {
 
   return (
     <QuickActionsProvider>
-      <div ref={appRef} className={cx('app', collapsed && 'is-collapsed', hasSubmodules && 'has-subbar', navAnim && 'nav-anim')}>
-        {/* Pull-to-refresh indicator (touch only): sits under the topbar, which never moves. */}
-        <div className="ptr" aria-hidden="true"><span className="ptr__spinner"><RefreshCw /></span></div>
-        <a className="sr-only" href="#main">Skip to content</a>
-        <Sidebar
-          open={navOpen}
-          collapsed={collapsed}
-          onClose={closeNav}
-          onToggleCollapse={toggleCollapsed}
-          counts={counts}
-        />
-        <div className="main">
-          <Topbar
-            onOpenNav={() => setNavOpen(true)}
+      <CrumbsProvider>
+      <FillProvider onChange={setFill}>
+        <div ref={appRef} className={cx('app', fill && 'is-fill', collapsed && 'is-collapsed', hasSubmodules && 'has-subbar', navAnim && 'nav-anim')}>
+          {/* Pull-to-refresh indicator (touch only): sits under the topbar, which never moves. */}
+          <div className="ptr" aria-hidden="true"><span className="ptr__spinner"><RefreshCw /></span></div>
+          <a className="sr-only" href="#main">Skip to content</a>
+          <Sidebar
+            open={navOpen}
+            collapsed={collapsed}
+            onClose={closeNav}
             onToggleCollapse={toggleCollapsed}
-            onOpenSearch={() => setSearchOpen(true)}
-            unread={unread}
             counts={counts}
           />
-          <main id="main" className="content" tabIndex={-1}>
-            <ViewAsBanner />
-            {blocked ? <NoAccess module={activeModule} /> : <Outlet />}
-          </main>
+          <div className="main">
+            <Topbar
+              onOpenNav={() => setNavOpen(true)}
+              onToggleCollapse={toggleCollapsed}
+              onOpenSearch={() => setSearchOpen(true)}
+              unread={unread}
+              counts={counts}
+            />
+            <main id="main" className="content" tabIndex={-1}>
+              <AddressBar />
+              <ViewAsBanner />
+              {blocked ? <NoAccess module={activeModule} /> : <Outlet />}
+            </main>
+          </div>
+          <CommandPalette open={searchOpen} onClose={closeSearch} />
+          <AssistantLauncher />
+          <PwaStatus />
+          <ScrollRestoration />
         </div>
-        <CommandPalette open={searchOpen} onClose={closeSearch} />
-        <AssistantLauncher />
-        <PwaStatus />
-        <ScrollRestoration />
-      </div>
+      </FillProvider>
+      </CrumbsProvider>
     </QuickActionsProvider>
   );
 }

@@ -37,6 +37,7 @@ import LoginPage from '../pages/auth/LoginPage.jsx';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage.jsx';
 import RequireAuth from '../pages/auth/RequireAuth.jsx';
 import NotFoundPage from '../pages/system/NotFoundPage.jsx';
+import QuickPage from '../pages/quick/QuickPage.jsx';
 
 /** Route map — see STRUCTURE.md. */
 export const router = createBrowserRouter([
@@ -92,6 +93,10 @@ export const router = createBrowserRouter([
       { path: 'ai/email-mining', element: <EmailMiningPage /> },
       { path: 'ai/campaigns', element: <CampaignsPage /> },
       { path: 'ai/assistant', element: <AssistantPage /> },
+      // Quick forms as pages (opened with useQuickActions().open): task, appointment, note, contact, payment, expense.
+      { path: 'new/:type', element: <QuickPage /> },
+      { path: 'edit/:type', element: <QuickPage /> },
+
       { path: 'settings', element: <Navigate to="/settings/profile" replace /> },
       { path: 'settings/:section', element: <SettingsPage /> },
 

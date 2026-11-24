@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useFillPage } from '../../../components/layout/FillPage.jsx';
 import {
   addDays, addMonths, addWeeks, eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, isToday,
   parseISO, setHours, setMinutes, startOfDay, startOfMonth, startOfWeek, subDays, subMonths, subWeeks,
@@ -164,6 +165,7 @@ export default function AgendaPage() {
     toast.show(t('agenda.rescheduled', { title: appt.title, when: format(next, 'EEE MMM d, h:mm a') }));
   };
 
+  useFillPage();
   const byDay = (d) => filtered.filter((a) => isSameDay(parseISO(a.start), d)).sort((a, b) => a.start.localeCompare(b.start));
 
   return (
@@ -179,7 +181,7 @@ export default function AgendaPage() {
         </div>
       </div>
 
-      <Card flush className="list-card">
+      <Card flush className="list-card fill cal-card">
         <div className="toolbar cal-toolbar">
           <div className="row">
             <Button size="sm" onClick={() => setCursor(startOfDay(new Date()))}>{t('common.today')}</Button>
@@ -199,6 +201,7 @@ export default function AgendaPage() {
           {APPT_TYPES.map((x) => <span key={x}><i className={`evt-dot evt--${x}`} aria-hidden="true" />{t(`appointmentTypes.${x}`)}</span>)}
         </div>
 
+        <div className="cal-body">
         <DataState loading={loading && !data} error={error} onRetry={refetch} skeleton={<div style={{ padding: 16 }}><Skeleton height={520} /></div>}>
           <DndContext sensors={sensors} onDragEnd={onDragEnd}>
             {view === 'month' && (
@@ -245,6 +248,7 @@ export default function AgendaPage() {
             </div>
           )}
         </DataState>
+        </div>
       </Card>
     </>
   );

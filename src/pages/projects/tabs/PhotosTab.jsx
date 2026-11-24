@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Camera, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ModalShell } from '../../../components/shells/index.js';
+import { InlinePanel } from '../../../components/shells/index.js';
 import { Badge, Button, Card, EmptyState, IconButton, SegmentedControl } from '../../../components/ui/index.js';
 import { useT } from '../../../i18n/index.jsx';
 import { date } from '../../../lib/format.js';
@@ -37,23 +37,7 @@ export default function PhotosTab({ d }) {
       subtitle={t('projects.photosHint')}
       actions={<SegmentedControl label={t('list.type')} value={kind} onChange={(v) => { setKind(v); setIndex(null); }} options={KINDS.map((k) => ({ value: k, label: t(`photoKinds.${k}`) }))} />}
     >
-      {photos.length ? (
-        <ul className="photo-grid">
-          {photos.map((p, i) => (
-            <li key={p.id}>
-              <button type="button" className="photo" onClick={() => setIndex(i)} aria-label={`${p.caption} · ${t(`photoKinds.${p.kind}`)}`}>
-                <Tile photo={p} />
-                <span className="photo__meta">
-                  <Badge tone={p.kind === 'before' ? 'neutral' : p.kind === 'after' ? 'success' : 'info'}>{t(`photoKinds.${p.kind}`)}</Badge>
-                  <span className="truncate">{p.caption}</span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : <EmptyState icon={Camera} title={t('projects.noPhotos')} />}
-
-      <ModalShell open={current != null} onClose={() => setIndex(null)} size="lg">
+      <InlinePanel open={current != null} onClose={() => setIndex(null)}>
         {({ titleId, requestClose }) => current && (
           <div className="form-shell">
             <header className="form-header">
@@ -70,7 +54,23 @@ export default function PhotosTab({ d }) {
             </div>
           </div>
         )}
-      </ModalShell>
+      </InlinePanel>
+      {photos.length ? (
+        <ul className="photo-grid">
+          {photos.map((p, i) => (
+            <li key={p.id}>
+              <button type="button" className="photo" onClick={() => setIndex(i)} aria-label={`${p.caption} · ${t(`photoKinds.${p.kind}`)}`}>
+                <Tile photo={p} />
+                <span className="photo__meta">
+                  <Badge tone={p.kind === 'before' ? 'neutral' : p.kind === 'after' ? 'success' : 'info'}>{t(`photoKinds.${p.kind}`)}</Badge>
+                  <span className="truncate">{p.caption}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : <EmptyState icon={Camera} title={t('projects.noPhotos')} />}
+
     </Card>
   );
 }

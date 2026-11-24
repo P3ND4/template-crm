@@ -71,3 +71,18 @@ export function flatNav() {
   });
   return out;
 }
+
+/**
+ * Address-bar trail for a path: [module, submodule] as { labelKey, to }.
+ * Used by the address bar (desktop) and by pages that link back to where they were opened from.
+ */
+const FLAT = [...NAV, ...NAV_FOOTER].flatMap((m) => [m, ...(m.children || []).map((c) => ({ ...c, parent: m }))]);
+export function navTrail(pathname = '/') {
+  const path = pathname.split('?')[0];
+  const matches = (it) => (it.end ? path === it.to : path === it.to || path.startsWith(`${it.to}/`));
+  let best = null;
+  FLAT.forEach((it) => { if (matches(it) && (!best || it.to.length > best.to.length)) best = it; });
+  if (!best) return [];
+  if (best.parent) return [{ labelKey: best.parent.labelKey, to: best.parent.to }, { labelKey: best.labelKey, to: best.to }];
+  return [{ labelKey: best.labelKey, to: best.to }];
+}

@@ -6,6 +6,12 @@ const es = {
     org: 'Demo Company',
     demoData: 'Datos de demostración',
   },
+  address: {
+    label: 'Ubicación',
+    back: 'Atrás',
+    forward: 'Adelante',
+    up: 'Subir un nivel',
+  },
   nav: {
     main: 'Navegación principal',
     modules: 'Módulos',
@@ -984,6 +990,8 @@ const es = {
     number: 'Introduce un importe válido.',
   },
   dashboard: {
+    viewsLabel: 'Vistas del dashboard',
+    views: { overview: 'Resumen', performance: 'Rendimiento', activity: 'Actividad' },
     title: 'Panel',
     subtitle: 'Resumen del negocio — {range}',
     range: 'Rango de fechas',

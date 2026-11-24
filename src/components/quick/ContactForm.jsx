@@ -2,13 +2,13 @@ import { useSession } from '../../app/SessionProvider.jsx';
 import { useT } from '../../i18n/index.jsx';
 import useForm, { isEmail, isPhone } from '../../hooks/useForm.js';
 import { contactsService } from '../../services/index.js';
-import { ModalShell, FormShell } from '../shells/index.js';
+import { FormPage } from '../shells/index.js';
 import { Field, Input, Select, useToast } from '../ui/index.js';
 
 export const CONTACT_TYPES = ['client', 'partner', 'referrer', 'architect', 'contractor'];
 
-/** Quick add / edit contact — modal (6 fields). Size: md. Full record lives on the contact page. */
-export default function ContactModal({ open, onClose, contact, type = 'client', onSaved }) {
+/** Add / edit contact — its own page (/new/contact, /edit/contact). Full record lives on the contact page. */
+export default function ContactForm({ fallback = '/', breadcrumbs, onClose, contact, type = 'client', onSaved }) {
   const t = useT();
   const session = useSession();
   const toast = useToast();
@@ -37,21 +37,17 @@ export default function ContactModal({ open, onClose, contact, type = 'client', 
     },
   );
   return (
-    <ModalShell open={open} onClose={onClose} size="md" dirty={form.dirty}>
-      {({ titleId, requestClose }) => (
-        <FormShell titleId={titleId} title={editing ? t('contacts.editTitle') : t('contacts.newTitle')} onCancel={requestClose} onSubmit={form.submit} dirty={form.dirty} saving={form.saving} submitLabel={editing ? t('common.save') : t('common.create')}>
-          <div className="field-grid field-grid--2">
-            <Field label={t('leads.fields.firstName')} error={form.errors.firstName} required><Input {...form.bind('firstName')} autoComplete="off" /></Field>
-            <Field label={t('leads.fields.lastName')} error={form.errors.lastName} required><Input {...form.bind('lastName')} autoComplete="off" /></Field>
-            <Field label={t('list.type')}>
-              <Select {...form.bind('type')} options={CONTACT_TYPES.map((x) => ({ value: x, label: t(`contactTypes.${x}`) }))} />
-            </Field>
-            <Field label={t('contacts.company')} optional><Input {...form.bind('company')} /></Field>
-            <Field label={t('leads.fields.email')} error={form.errors.email} optional><Input type="email" {...form.bind('email')} /></Field>
-            <Field label={t('leads.fields.phone')} error={form.errors.phone} optional><Input type="tel" {...form.bind('phone')} /></Field>
-          </div>
-        </FormShell>
-      )}
-    </ModalShell>
+    <FormPage fallback={fallback} breadcrumbs={breadcrumbs} title={editing ? t('contacts.editTitle') : t('contacts.newTitle')} onSubmit={form.submit} dirty={form.dirty} saving={form.saving} submitLabel={editing ? t('common.save') : t('common.create')}>
+      <div className="field-grid field-grid--2">
+        <Field label={t('leads.fields.firstName')} error={form.errors.firstName} required><Input {...form.bind('firstName')} autoComplete="off" /></Field>
+        <Field label={t('leads.fields.lastName')} error={form.errors.lastName} required><Input {...form.bind('lastName')} autoComplete="off" /></Field>
+        <Field label={t('list.type')}>
+          <Select {...form.bind('type')} options={CONTACT_TYPES.map((x) => ({ value: x, label: t(`contactTypes.${x}`) }))} />
+        </Field>
+        <Field label={t('contacts.company')} optional><Input {...form.bind('company')} /></Field>
+        <Field label={t('leads.fields.email')} error={form.errors.email} optional><Input type="email" {...form.bind('email')} /></Field>
+        <Field label={t('leads.fields.phone')} error={form.errors.phone} optional><Input type="tel" {...form.bind('phone')} /></Field>
+      </div>
+    </FormPage>
   );
 }

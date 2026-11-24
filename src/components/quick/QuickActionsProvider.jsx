@@ -1,27 +1,28 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import TaskModal from './TaskModal.jsx';
-import AppointmentModal from './AppointmentModal.jsx';
-import NoteModal from './NoteModal.jsx';
-import ContactModal from './ContactModal.jsx';
-import PaymentModal from './PaymentModal.jsx';
-import ExpenseModal from './ExpenseModal.jsx';
+import { createContext, useCallback, useContext, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-/** Opens quick-create modals from anywhere (topbar "+ New", command palette, lists). */
+/**
+ * Opens the quick forms (task, appointment, note, contact, payment, expense) from anywhere:
+ * topbar "+ New", command palette, lists and detail pages.
+ * They are PAGES, not modal windows: open() navigates to /new/:type (or /edit/:type) and Back,
+ * Cancel or Save return to where the user was. Callbacks (onSaved) are not needed: the page the
+ * user returns to loads its data again.
+ */
 const QuickActionsContext = createContext(null);
-const MODALS = { task: TaskModal, appointment: AppointmentModal, note: NoteModal, contact: ContactModal, payment: PaymentModal, expense: ExpenseModal };
+const EDIT_KEYS = { appointment: 'appointment', contact: 'contact' };
 
 export function QuickActionsProvider({ children }) {
-  const [active, setActive] = useState(null); // { type, props }
-  const open = useCallback((type, props = {}) => setActive({ type, props }), []);
-  const close = useCallback(() => setActive(null), []);
-  const value = useMemo(() => ({ open, close }), [open, close]);
-  const Modal = active ? MODALS[active.type] : null;
-  return (
-    <QuickActionsContext.Provider value={value}>
-      {children}
-      {Modal && <Modal key={active.type} open onClose={close} {...active.props} />}
-    </QuickActionsContext.Provider>
-  );
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.pathname + location.search;
+  const open = useCallback((type, props = {}) => {
+    const editing = Boolean(EDIT_KEYS[type] && props[EDIT_KEYS[type]]);
+    // History state must be serializable: drop callbacks.
+    const quick = Object.fromEntries(Object.entries(props).filter(([, v]) => typeof v !== 'function'));
+    navigate(`/${editing ? 'edit' : 'new'}/${type}`, { state: { quick, from } });
+  }, [navigate, from]);
+  const value = useMemo(() => ({ open, close: () => {} }), [open]);
+  return <QuickActionsContext.Provider value={value}>{children}</QuickActionsContext.Provider>;
 }
 
 export function useQuickActions() {

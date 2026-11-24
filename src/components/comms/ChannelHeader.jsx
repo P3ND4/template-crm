@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom';
+import { usePageCrumbs } from '../layout/AddressBar.jsx';
+import { NavLink, useLocation } from 'react-router-dom';
 import { Mail, MessageCircle, MessageSquareText } from 'lucide-react';
 import { useT } from '../../i18n/index.jsx';
 
@@ -6,6 +7,9 @@ import { useT } from '../../i18n/index.jsx';
 export default function ChannelHeader({ actions, unread }) {
   unread = unread || {};
   const t = useT();
+  // Address bar: CRM › Communications › <channel>.
+  const channel = useLocation().pathname.split('/')[3];
+  usePageCrumbs(['whatsapp', 'sms', 'email'].includes(channel) ? [{ label: t(`channels.${channel}`) }] : []);
   return (
     <>
       <div className="page-head">

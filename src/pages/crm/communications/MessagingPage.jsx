@@ -15,6 +15,7 @@ import { useT } from '../../../i18n/index.jsx';
 import { communicationsService } from '../../../services/index.js';
 import { time } from '../../../lib/format.js';
 import cx from '../../../lib/cx.js';
+import { useFillPage } from '../../../components/layout/FillPage.jsx';
 
 const FILTERS = ['all', 'unread', 'mine'];
 const ICON = { whatsapp: MessageCircle, sms: MessageSquareText };
@@ -83,6 +84,7 @@ export function ThreadView({ id, channel = 'whatsapp', showPanel, onTogglePanel,
 /** Chat inbox shared by WhatsApp and SMS: list (search, filters) · thread · contact panel. */
 export default function MessagingPage({ channel = 'whatsapp' }) {
   const t = useT();
+  useFillPage();
   const session = useSession();
   const [params, setParams] = useSearchParams();
   const active = params.get('c');
@@ -103,7 +105,7 @@ export default function MessagingPage({ channel = 'whatsapp' }) {
   return (
     <>
       <ChannelHeader unread={unread} />
-      <div className={cx('comms', active && 'has-active', showPanel && active && 'has-panel')}>
+      <div className={cx('comms fill', active && 'has-active', showPanel && active && 'has-panel')}>
         <aside className="comms-list" aria-label={t('comms.conversations')}>
           <div className="comms-list__top">
             <SearchInput value={q} onChange={(v) => set('q', v)} placeholder={t('comms.searchChats')} />

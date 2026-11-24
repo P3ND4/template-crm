@@ -40,9 +40,12 @@ Everything lives in `src/styles/tokens.css` (and the accent presets in `src/app/
 - **No invented deltas or targets.** The KPIs only show factual context (count, range). A missing value renders "—".
 
 ## Interaction
-- **Hybrid pattern**: `FormShell` is the single form anatomy (fixed header, scrolling body, fixed footer). It is wrapped by `ModalShell` (sm 480 / md 640 / lg 840, max-h `min(90vh,760px)`) or by `FormPage` (sticky header under the topbar + sticky footer).
+- **No modal windows** (navigation like Windows Explorer, requested for this template): forms and viewers open in the page. Quick forms are pages (`/new/:type`, `/edit/:type`); short forms and previews are inline panels (`InlinePanel`) at the top of the current page. The only dialog left is `ConfirmDialog` (delete, discard changes). `FormShell` is the single form anatomy (fixed header, scrolling body, fixed footer), used by `FormPage` and `InlinePanel`.
+- **Address bar** (desktop): Back · Forward · Up + the location path (module › section › record), built from `navigation.js` plus the crumbs a page declares through `PageShell`. Phones keep the page's own Back button.
+- **Fill pages** (desktop): Agenda, WhatsApp / SMS, Email and the Dashboard fit the window; the page never scrolls, the main card does, with equal gaps on all four sides. The Dashboard is split into Overview · Performance · Activity views.
+- **No floating button on desktop**: the AI assistant opens from the address bar; phones keep the floating button.
 - **Back**: `navigate(-1)` when there is in-app history (`history.state.idx > 0`). Otherwise it goes to the parent list. Filters, tabs and pages live in the URL (`useUrlState`). Scroll is restored by React Router's `<ScrollRestoration>` (data router).
-- **Unsaved changes**: modals ask on Esc, backdrop click or ✕. Pages use `useBlocker` (covers Back, links and the browser back button).
+- **Unsaved changes**: inline panels ask on Esc or ✕. Pages use `useBlocker` (covers Back, links and the browser back button).
 - The sidebar collapsed state is kept in `localStorage`, as a per-user convenience only.
 - Dark theme: same token names under `[data-theme="dark"]`; users pick light / dark / system in My profile.
 

@@ -27,7 +27,7 @@ template-crm/
    │  ├─ ui/            Button, IconButton, Field, Input, Select, Textarea (auto-grow), DatePicker,
    │  │                 Card, Badge, Avatar, Tabs, SegmentedControl, Table, Pagination, Menu,
    │  │                 Toast, EmptyState, Skeleton, DataState, Kpi, Kanban, RichTextEditor, Switch
-   │  ├─ shells/        FormShell · ModalShell · PageShell · FormPage · BackButton · ConfirmDialog
+   │  ├─ shells/        FormShell · InlinePanel · PageShell · FormPage · BackButton · ConfirmDialog
    │  ├─ layout/        AppLayout · Sidebar (collapsible) · Topbar (2 rows) · ModuleNav (modules + submodules rows) · CommandPalette · Access (NoAccess page, view-as banner) · PwaStatus (service worker: offline ready / new version)
    │  ├─ quick/         QuickActionsProvider + Task / Appointment / Note / Contact modals
    │  ├─ list/          ListToolbar · SearchInput · FilterSelect · ViewToggle
@@ -83,49 +83,38 @@ template-crm/
 | `/settings/ai` | Assistant, tone, data access, review, usage | ✅ |
 | `/settings/notifications` | Events × channels, digest, quiet hours | ✅ |
 
-## Action → Modal or Page
+## Action → Page or Panel (no modal windows)
 
-Rule of thumb: a short, self-contained action with roughly 6 fields or fewer opens a **modal**. A long flow, sections or tabs, or more than 6 fields opens a **page** with ← Back.
+Rule: the app navigates like Windows Explorer. Every form or viewer opens **in the page**: a short action
+opens an **inline panel** at the top of the current page; anything else is its own **page** (with Back /
+Forward / Up in the address bar). The only dialogs left are confirmations ("Delete?", "Leave without saving?").
 
-| Action | Pattern | Size |
-|---|---|---|
-| Confirm / delete / discard changes | Modal (`ConfirmDialog`) | sm |
-| New / edit task | Modal | sm |
-| New / edit note | Modal | sm |
-| New / edit appointment (quick) | Modal | md |
-| Quick add / edit contact | Modal | md |
-| Record payment (`PaymentModal`) | Modal | sm |
-| Document preview · photo lightbox | Modal | lg |
-| Change selection status | Inline select in the table | — |
-| Project note | Inline form in the Notes tab | — |
-| Pickers (contact, project, template) | Modal | md |
-| Quick preview (attachment, estimate) | Modal | lg |
-| New / edit **Lead** (full) | **Page** `/crm/leads/new` | — |
-| Contact record | Page | — |
-| New / edit Project · Project detail (tabs) | Page | — |
-| Estimate / Invoice builder (line items, live totals, preview) | Page `/finance/{estimates,invoices}/new` · `/:id/edit` | — |
-| New expense / purchase order (`ExpenseModal`) | Modal | md |
-| Receipt preview | Modal | md |
-| Approve / reject expense | Inline (row or bulk) | — |
-| Opportunity detail | Page `/crm/pipeline/:id` | — |
-| Delete appointment | Modal (`ConfirmDialog`) | sm |
-| Appointment full detail | Page `/crm/agenda/:id` | — |
-| Lead detail · Edit lead | Page `/crm/leads/:id` · `/edit` | — |
-| WhatsApp / SMS reply · internal note | Inline composer in the thread pane | — |
-| Record SMS consent (`ConsentModal`) | Modal | sm |
-| Email quick reply | Inline panel in the reading pane | — |
-| Email composer · expanded conversation | Page `/crm/communications/email/compose` · `/:channel/:id` | — |
-| Campaign / sequence | Page | — |
-| AI assistant (floating) | Side panel (non-blocking) | 420px |
-| AI module configuration | Configure view inside the module page | — |
-| Settings sections | Page (tabs) | — |
+| Action | Pattern |
+|---|---|
+| New task · note · appointment · contact · payment · expense | **Page** `/new/:type` (opened with `useQuickActions().open(type, props)`; Save/Cancel return where you were) |
+| Edit appointment · edit contact (quick) | **Page** `/edit/appointment` · `/edit/contact` |
+| New / edit **Lead** (full) | Page `/crm/leads/new` · `/:id/edit` |
+| Contact record · Lead detail · Opportunity · Appointment detail | Page |
+| New / edit Project · Project detail (tabs) | Page |
+| Estimate / Invoice builder | Page `/finance/{estimates,invoices}/new` · `/:id/edit` |
+| Email composer · expanded conversation | Page `/crm/communications/email/compose` · `/:channel/:id` |
+| Invite user · catalog item · template (with live preview) | Inline panel (`InlinePanel`) at the top of the settings section |
+| Record SMS consent | Inline panel in the contact side pane |
+| Document preview · photo viewer · receipt preview | Inline panel at the top of the tab / list |
+| WhatsApp / SMS reply · internal note · email quick reply | Inline composer in the thread pane |
+| Change selection status · approve / reject expense · change a user's role | Inline (row or bulk) |
+| Settings sections | Page with sticky Save bar (`SettingsForm`) |
+| AI assistant | Side panel (non-blocking), opened from the address bar (desktop) or the floating button (phones) |
+| Confirm / delete / discard changes · revoke invitation | Dialog (`ConfirmDialog`) — the only dialog |
 
 **Shared anatomy** (`FormShell`): fixed header (title + ✕ or Back) · body that scrolls vertically only · fixed footer (Cancel / Save + save state).
 Field grids collapse from 2 columns to 1 below 640px. Textareas auto-grow and then scroll internally.
-Validation is inline, focus goes to the first invalid field, **Esc** closes (it asks first if there are changes), **Ctrl/⌘+Enter** saves, focus is trapped, and background scroll is locked.
-| Settings sections (profile, organization, billing, channels, AI, notifications) | Page with sticky Save bar (`SettingsForm`) | — |
-| Invite user | Modal | sm |
-| New / edit catalog item | Modal | md |
-| New / edit template (with live preview) | Modal | lg |
-| Change a user's role · permission level | Inline select | — |
-| Revoke invitation · delete template / catalog item | Modal (`ConfirmDialog`) | sm |
+Validation is inline, focus goes to the first invalid field, **Esc** closes a panel (it asks first if there are changes), **Ctrl/⌘+Enter** saves.
+
+## Fill pages (no page scroll on desktop)
+
+Agenda, WhatsApp / SMS, Email and the Dashboard fit the window (≥1024px wide, ≥600px tall): the header
+stays put and the main card takes the rest, with the same gap at the bottom as on the sides; content scrolls
+inside it. The Dashboard is split into three views (Overview · Performance · Activity, `?view=`).
+Opt in with `useFillPage()` and the class `fill` on the element that fills (see `components/layout/FillPage.jsx`).
+Phones and short windows keep normal page scrolling.

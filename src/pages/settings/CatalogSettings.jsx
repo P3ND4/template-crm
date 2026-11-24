@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { RowMenu } from '../../components/crm/bits.jsx';
 import ListToolbar, { FilterSelect, SearchInput } from '../../components/list/ListToolbar.jsx';
-import { ConfirmDialog, FormShell, ModalShell } from '../../components/shells/index.js';
+import { ConfirmDialog, FormShell, InlinePanel } from '../../components/shells/index.js';
 import { Badge, Button, Card, DataState, Field, Input, Select, SkeletonList, Switch, Table, useToast } from '../../components/ui/index.js';
 import useForm from '../../hooks/useForm.js';
 import useListState from '../../hooks/useListState.js';
@@ -15,7 +15,7 @@ import { SettingsHeader, useSettingsAccess } from './shared.jsx';
 const KINDS = ['service', 'product'];
 const UNITS = ['project', 'hour', 'week', 'lot', 'room', 'set', 'sq ft', 'linear ft', 'window', 'each'];
 
-function CatalogModal({ item, onClose, onSaved }) {
+function CatalogPanel({ item, onClose, onSaved }) {
   const t = useT();
   const toast = useToast();
   const form = useForm(
@@ -35,9 +35,9 @@ function CatalogModal({ item, onClose, onSaved }) {
   );
   const set = form.set;
   return (
-    <ModalShell open onClose={onClose} size="md" dirty={form.dirty}>
+    <InlinePanel onClose={onClose} dirty={form.dirty}>
       {({ titleId, requestClose }) => (
-        <FormShell titleId={titleId} title={item ? t('settings.catalog.editTitle') : t('settings.catalog.newTitle')} subtitle={t('settings.catalog.modalSub')} onCancel={requestClose} onSubmit={form.submit} dirty={form.dirty} saving={form.saving} submitLabel={item ? t('common.save') : t('common.create')}>
+        <FormShell variant="panel" titleId={titleId} title={item ? t('settings.catalog.editTitle') : t('settings.catalog.newTitle')} subtitle={t('settings.catalog.modalSub')} onCancel={requestClose} onSubmit={form.submit} dirty={form.dirty} saving={form.saving} submitLabel={item ? t('common.save') : t('common.create')}>
           <div className="field-grid field-grid--2">
             <Field label={t('list.type')}>
               <Select {...form.bind('kind')} onChange={(e) => { set('kind', e.target.value); set('taxable', e.target.value === 'product'); }} options={KINDS.map((k) => ({ value: k, label: t(`settings.catalog.kind.${k}`) }))} />
@@ -53,7 +53,7 @@ function CatalogModal({ item, onClose, onSaved }) {
           </div>
         </FormShell>
       )}
-    </ModalShell>
+    </InlinePanel>
   );
 }
 
@@ -78,6 +78,7 @@ export default function CatalogSettings() {
   return (
     <>
       <SettingsHeader section="catalog" actions={newBtn} />
+      {editing && <CatalogPanel key={editing.item?.id || 'new'} item={editing.item} onClose={() => setEditing(null)} onSaved={refetch} />}
       <ListToolbar
         search={<SearchInput value={list.q} onChange={list.setQ} placeholder={t('settings.catalog.search')} />}
         filters={<FilterSelect label={t('list.type')} value={list.filters.kind || ''} onChange={(v) => list.setFilter('kind', v)} options={KINDS.map((k) => ({ value: k, label: t(`settings.catalog.kind.${k}`) }))} />}
@@ -122,7 +123,6 @@ export default function CatalogSettings() {
         </DataState>
       </Card>
       <p className="subtle" style={{ fontSize: 13, marginTop: 12 }}>{t('settings.catalog.note', { n: data?.length ?? 0 })}</p>
-      {editing && <CatalogModal key={editing.item?.id || 'new'} item={editing.item} onClose={() => setEditing(null)} onSaved={refetch} />}
       <ConfirmDialog
         open={Boolean(removing)}
         title={t('settings.catalog.deleteTitle')}

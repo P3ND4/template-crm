@@ -18,7 +18,7 @@ Esta guía explica **cómo está construido el proyecto y por qué**, para dos u
 5. [Sistema de diseño: tokens, CSS y temas](#5-sistema-de-diseño-tokens-css-y-temas)
 6. [Layout: sidebar, topbar, navegación y contenido](#6-layout-sidebar-topbar-navegación-y-contenido)
 7. [Responsive: viewport vs container queries](#7-responsive-viewport-vs-container-queries)
-8. [Patrón híbrido Modal / Página](#8-patrón-híbrido-modal--página)
+8. [Navegación tipo Explorador: páginas y paneles, sin modales](#8-navegación-tipo-explorador-páginas-y-paneles-sin-modales)
 9. [Formularios](#9-formularios)
 10. [Datos: services, mocks y estados de carga](#10-datos-services-mocks-y-estados-de-carga)
 11. [Listas, tablas y estado en la URL](#11-listas-tablas-y-estado-en-la-url)
@@ -83,7 +83,7 @@ src/
 ├─ data/                  mock/ (datos ficticios) · constants.js · schema.md
 ├─ components/
 │  ├─ ui/                 átomos: Button, Field, Input, Table, Tabs, Menu, Toast…
-│  ├─ shells/             estructura de formularios y páginas: ModalShell, FormShell, PageShell…
+│  ├─ shells/             estructura de formularios y páginas: FormShell, InlinePanel, PageShell…
 │  ├─ layout/             AppLayout, Sidebar, Topbar, ModuleNav, CommandPalette, Access, PwaStatus
 │  ├─ list/               ListToolbar (búsqueda, filtros, vista tabla/tarjetas)
 │  ├─ quick/              modales de creación rápida (+ Nuevo)
@@ -266,20 +266,24 @@ Cabecera de página estándar:
 
 ---
 
-## 8. Patrón híbrido Modal / Página
+## 8. Navegación tipo Explorador: páginas y paneles, sin modales
 
-**Regla:** acción corta y autocontenida (≤ ~6 campos, confirmar, elegir) → **modal**. Flujo largo, con secciones o pestañas → **página** con "← Atrás". La tabla completa está en `STRUCTURE.md`.
+**Regla:** la app se navega como el Explorador de Windows. Nada se abre en una ventana flotante:
+
+- **Acción corta** (invitar usuario, ítem de catálogo, plantilla, consentimiento SMS, vista previa) → **panel en línea** (`InlinePanel`) arriba de la página actual.
+- **Todo lo demás** (crear tarea / cita / nota / contacto / pago / gasto, leads, proyectos, documentos) → **página** propia, con Atrás · Adelante · Subir en la barra de direcciones.
+- **Único diálogo permitido:** `ConfirmDialog` (eliminar, descartar cambios). La tabla completa está en `STRUCTURE.md`.
 
 ```jsx
-// Modal (ej. components/quick/TaskModal.jsx)
-<ModalShell open={open} onClose={onClose} size="sm" dirty={form.dirty}>
+// Panel en línea (ej. pages/settings/UsersSettings.jsx → InvitePanel)
+<InlinePanel open={open} onClose={onClose} dirty={form.dirty}>
   {({ titleId, requestClose }) => (
-    <FormShell titleId={titleId} title={t('task.new')} onCancel={requestClose}
+    <FormShell variant="panel" titleId={titleId} title={t('settings.users.inviteTitle')} onCancel={requestClose}
                onSubmit={form.submit} dirty={form.dirty} saving={form.saving}>
-      <Field label={t('task.title')} error={form.errors.title} required><Input {...form.bind('title')} /></Field>
+      <Field label={t('settings.fields.email')} error={form.errors.email} required><Input {...form.bind('email')} /></Field>
     </FormShell>
   )}
-</ModalShell>
+</InlinePanel>
 
 // Página (ej. pages/crm/leads/LeadFormPage.jsx)
 <FormPage fallback="/crm/leads" breadcrumbs={[{ label: t('leads.title'), to: '/crm/leads' }, { label: t('leads.new') }]}
@@ -288,16 +292,18 @@ Cabecera de página estándar:
 </FormPage>
 ```
 
-| Shell | Qué hace |
+| Pieza | Qué hace |
 |---|---|
-| `ModalShell` | tamaños fijos (sm / md / lg), Esc y clic fuera (pregunta si hay cambios), foco atrapado, bloqueo de scroll, portal a `body` |
-| `FormShell` | la ÚNICA estructura de formulario: cabecera fija · cuerpo con scroll · pie fijo (Cancelar / Guardar + estado). **Ctrl/⌘ + Enter** envía |
+| `InlinePanel` | panel dentro de la página: aparece donde lo pongas, hace scroll hasta él y enfoca el primer campo; Esc / ✕ cierran (pregunta si hay cambios) |
+| `FormShell` | la ÚNICA estructura de formulario: cabecera fija · cuerpo con scroll · pie fijo (Cancelar / Guardar + estado). **Ctrl/⌘ + Enter** envía. Variantes `page` y `panel` |
 | `FormPage` | `PageShell` + `FormShell variant="page"` + `useBlocker` (avisa al salir con cambios) |
-| `PageShell` | botón Atrás + migas discretas para páginas de detalle |
+| `PageShell` | declara las migas de la página (van a la barra de direcciones en escritorio) + botón Atrás en el teléfono |
+| `AddressBar` | Atrás · Adelante · Subir + ruta (módulo › sección › registro). Las páginas añaden migas con `usePageCrumbs()` (PageShell lo hace solo) |
 | `useGoBack(fallback)` | vuelve en el historial si vienes de la app; si entraste por link directo va al `fallback` |
-| `ConfirmDialog` | `alertdialog` pequeño (descartar, eliminar, revocar) |
+| `ConfirmDialog` | `alertdialog` pequeño (descartar, eliminar, revocar) — el único diálogo |
+| `useFillPage()` | la página se ajusta a la ventana en escritorio: el elemento con clase `fill` ocupa el resto, con scroll interno y márgenes iguales en los 4 lados |
 
-Los modales de creación rápida se abren desde cualquier sitio con `useQuickActions().open('task', { projectId })` (`QuickActionsProvider`).
+Los formularios rápidos se abren desde cualquier sitio con `useQuickActions().open('task', { projectId })`: navega a `/new/task` con esos datos en el estado del historial; Guardar o Cancelar vuelven exactamente a donde estabas (la página de origen recarga sus datos, no hacen falta callbacks).
 
 ---
 
@@ -549,7 +555,7 @@ Objetivo: quedarte con **el esqueleto** (layout, shells, componentes, hooks, ser
 3. **Navegación:** deja en `navigation.js` solo Dashboard + 1 módulo de ejemplo + Settings. Ajusta `PERMISSION_MODULES` y la matriz en `data/mock/settings.js`.
 4. **Rutas:** en `router.jsx` borra las de dominio; deja auth, dashboard, el módulo de ejemplo, settings y 404.
 5. **Borra páginas, componentes, services y mocks de dominio.** Arregla los imports con `npm run build`, que falla en el primer import roto.
-6. **QuickActions:** deja un modal de ejemplo (por ejemplo `TaskModal`) y ajusta el menú "+ Nuevo" del `Topbar` y la paleta.
+6. **QuickActions:** deja un formulario de ejemplo (por ejemplo `TaskForm`) y ajusta el menú "+ Nuevo" del `Topbar` y la paleta.
 7. **Settings:** en `SettingsPage.jsx` deja `profile`, `organization`, `users` y `notifications` (y sus hijos en `navigation.js`). Quita las secciones de canales, plantillas, catálogo, facturación, integraciones e IA, y sus funciones en `settingsService`.
 8. **i18n:** borra las claves de dominio en `en.js` y `es.js`. Corre el dev server con `BASE=http://localhost:5173 npm run qa:audit` para detectar claves faltantes.
 9. **CSS:** quita los bloques de dominio de `components.css` (lista en 19.1).
@@ -587,7 +593,7 @@ Añade un hijo en `children` del módulo en `navigation.js`, más su ruta. Apare
 
 ### Añadir un modal de creación rápida
 
-Crea `components/quick/XModal.jsx` (patrón §8), regístralo en `MODALS` de `QuickActionsProvider` y añade la entrada en el menú "+ Nuevo" de `Topbar.jsx`.
+Crea `components/quick/XForm.jsx` con `<FormPage>` (patrón §8), regístralo en `FORMS` y `TITLES` de `pages/quick/QuickPage.jsx` y añade la entrada en el menú "+ Nuevo" de `Topbar.jsx`.
 
 ### Añadir una sección de Settings
 

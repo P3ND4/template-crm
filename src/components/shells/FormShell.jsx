@@ -28,7 +28,7 @@ export default function FormShell({
           {subtitle && <p className="form-subtitle">{subtitle}</p>}
         </div>
         {headerEnd}
-        {variant === 'modal' && <IconButton icon={X} label={t('common.close')} onClick={onCancel} />}
+        {(variant === 'modal' || variant === 'panel') && <IconButton icon={X} label={t('common.close')} onClick={onCancel} />}
       </header>
       <div className="form-body">{children}</div>
       <footer className="form-footer">

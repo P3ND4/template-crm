@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Eye, Lock, MailPlus, RotateCw, Send, UserCheck, UserX, X } from 'lucide-react';
 import { useSession } from '../../app/SessionProvider.jsx';
 import { PersonCell, RowMenu } from '../../components/crm/bits.jsx';
-import { ConfirmDialog, FormShell, ModalShell } from '../../components/shells/index.js';
+import { ConfirmDialog, FormShell, InlinePanel } from '../../components/shells/index.js';
 import { Badge, Button, Card, DataState, Field, Input, Select, SkeletonList, Table, Textarea, useToast } from '../../components/ui/index.js';
 import useForm, { isEmail } from '../../hooks/useForm.js';
 import useResource from '../../hooks/useResource.js';
@@ -14,7 +14,7 @@ import { SettingsForm, SettingsHeader, SettingsSection, useSettingsAccess } from
 const LEVELS = ['none', 'view', 'full'];
 const LEVEL_TONE = { none: 'danger', view: 'info', full: 'success' };
 
-function InviteModal({ open, onClose, onSaved, existing }) {
+function InvitePanel({ open, onClose, onSaved, existing }) {
   const t = useT();
   const toast = useToast();
   const form = useForm({ email: '', role: 'designer', message: '' }, {
@@ -31,9 +31,9 @@ function InviteModal({ open, onClose, onSaved, existing }) {
     },
   });
   return (
-    <ModalShell open={open} onClose={onClose} size="sm" dirty={form.dirty}>
+    <InlinePanel open={open} onClose={onClose} dirty={form.dirty}>
       {({ titleId, requestClose }) => (
-        <FormShell titleId={titleId} title={t('settings.users.inviteTitle')} subtitle={t('settings.users.inviteSub')} onCancel={requestClose} onSubmit={form.submit} dirty={form.dirty} saving={form.saving} submitLabel={t('settings.users.sendInvite')}>
+        <FormShell variant="panel" titleId={titleId} title={t('settings.users.inviteTitle')} subtitle={t('settings.users.inviteSub')} onCancel={requestClose} onSubmit={form.submit} dirty={form.dirty} saving={form.saving} submitLabel={t('settings.users.sendInvite')}>
           <div className="stack">
             <Field label={t('settings.fields.email')} error={form.errors.email} required><Input {...form.bind('email')} type="email" autoComplete="off" placeholder="name@example.com" data-autofocus /></Field>
             <Field label={t('settings.users.role')} hint={t(`settings.roleDesc.${form.values.role}`)}>
@@ -44,7 +44,7 @@ function InviteModal({ open, onClose, onSaved, existing }) {
           </div>
         </FormShell>
       )}
-    </ModalShell>
+    </InlinePanel>
   );
 }
 
@@ -72,6 +72,7 @@ function Team({ readOnly }) {
   const invites = data?.invites || [];
   return (
     <>
+      {inviting && <InvitePanel open onClose={() => setInviting(false)} onSaved={refetch} existing={[...users.map((u) => u.email), ...invites.map((i) => i.email)]} />}
       <Card
         flush
         className="list-card"
@@ -127,7 +128,6 @@ function Team({ readOnly }) {
           )}
         </DataState>
       </Card>
-      {inviting && <InviteModal open onClose={() => setInviting(false)} onSaved={refetch} existing={[...users.map((u) => u.email), ...invites.map((i) => i.email)]} />}
       <ConfirmDialog
         open={Boolean(revoke)}
         title={t('settings.users.revokeTitle')}

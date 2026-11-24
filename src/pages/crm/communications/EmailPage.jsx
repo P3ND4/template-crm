@@ -14,6 +14,7 @@ import { date, time } from '../../../lib/format.js';
 import { communicationsService, lookupService } from '../../../services/index.js';
 import { signature } from '../../../services/communicationsService.js';
 import cx from '../../../lib/cx.js';
+import { useFillPage } from '../../../components/layout/FillPage.jsx';
 
 const FOLDERS = [['inbox', Inbox], ['starred', Star], ['sent', Send], ['drafts', File], ['archive', Archive], ['trash', Trash2]];
 const LABELS = ['Clients', 'Vendors', 'Permits', 'Billing'];
@@ -107,6 +108,7 @@ export function EmailThread({ id, expanded, onChanged }) {
 
 export default function EmailPage() {
   const t = useT();
+  useFillPage();
   const toast = useToast();
   const [params, setParams] = useSearchParams();
   const folder = params.get('folder') || (params.get('label') ? '' : 'inbox');
@@ -143,7 +145,7 @@ export default function EmailPage() {
         unread={counts?.[1]}
         actions={<Button variant="primary" icon={PenSquare} to="/crm/communications/email/compose">{t('comms.compose')}</Button>}
       />
-      <div className={cx('mail', active && 'has-active')}>
+      <div className={cx('mail fill', active && 'has-active')}>
         <nav className="mail-nav" aria-label={t('comms.folders.title')}>
           <ul>
             {FOLDERS.map(([f, Icon]) => {

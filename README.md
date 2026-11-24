@@ -34,7 +34,7 @@ Requires Node 18+ (tested with Node 22).
 
 | Step | Module | Status |
 |---|---|---|
-| 1 | Structure, tokens, layout, router, base components, hybrid Modal/Page shells | ✅ |
+| 1 | Structure, tokens, layout, router, base components, page / inline-panel shells (no modal windows) | ✅ |
 | 2 | Dashboard | ✅ |
 | 3 | CRM — Communications (WhatsApp + Email), Agenda, Contacts, Leads, Prospecting, Pipeline | ✅ |
 | 4 | Projects | ✅ |
@@ -50,7 +50,9 @@ All modules are built. Step 8 is the final polish pass.
 - **Sign in**: open the app → `/login` (it looks like production: no demo hints). Accounts and password are in **[`docs/DEMO_ACCOUNTS.md`](docs/DEMO_ACCOUNTS.md)**: one per role (admin, designer, accounting, viewer). User menu → **Sign out**.
 - **Collapse the sidebar** (button in the top-left corner or **Ctrl/⌘ + B**): it slides away, the module icons slide into the topbar with the submodules below, and pages use the extra width (more table columns, more cards per row).
 - **Ctrl/⌘ + K**: global search and command palette.
-- **+ New → Task / Appointment / Note**: quick **modal** forms. Try Esc with changes, Ctrl/⌘+Enter, and the inline validation.
+- **+ New → Task / Appointment / Note**: quick forms open as **pages** (`/new/task`…), never as floating windows. Save or Cancel returns exactly where you were. Try leaving with changes, Ctrl/⌘+Enter, and the inline validation.
+- **Address bar** (desktop): Back · Forward · Up and the path (CRM › Leads › record), like Windows Explorer.
+- **No page scroll** on Agenda, WhatsApp / SMS, Email and the Dashboard (desktop): the card fills the window and scrolls inside. The Dashboard has three views: Overview · Performance · Activity.
 - **+ New → Lead**: full **page** form with **← Back**. Back returns to the same screen, scroll and filters. If you leave with unsaved changes, it asks first.
 - Dashboard **date range**: stored in the URL (`?range=ytd`).
 - User menu → **Español / English**: i18n switch.
@@ -60,7 +62,7 @@ All modules are built. Step 8 is the final polish pass.
 - **Communications → SMS**: texting from a business number, the way US clients prefer. Consent per contact (opted in / no consent / opted out by STOP), STOP blocks texting, brand name + “Reply STOP to opt out” added to the first text, quiet hours (texts written at night are scheduled for the morning), live GSM-7/Unicode segment counter, MMS images, SMS templates. Configure it in Settings → Channels → SMS / MMS (provider, A2P 10DLC registration, STOP/HELP/START replies).
 - **Communications → WhatsApp**: 24h-window indicator, internal notes, quick templates, and a linked contact/project panel. **Email**: folders, labels, bulk actions, a reading pane with quick reply, and the full composer page.
 - **Prospecting**: prospect lists and campaigns with reply metrics, plus "Convert to lead".
-- **Projects**: table ↔ cards view with progress, budget used and projected margin. The project page has 11 tabs (overview, rooms & scope, tasks, Gantt timeline, selections & materials, budget & expenses, documents, photos, communications, estimates & invoices, notes), plus New/Edit project as a page and Record payment as a modal.
+- **Projects**: table ↔ cards view with progress, budget used and projected margin. The project page has 11 tabs (overview, rooms & scope, tasks, Gantt timeline, selections & materials, budget & expenses, documents, photos, communications, estimates & invoices, notes), plus New/Edit project and Record payment as pages.
 - **Finance**:
   - Estimate and invoice builder with catalog items, qty, price, discount and 7% sales tax; totals update live, with an Edit ↔ Preview switch.
   - PDF-like preview with "Download PDF" (prints only the document).
@@ -69,7 +71,7 @@ All modules are built. Step 8 is the final polish pass.
   - Reports: income vs expenses, receivables aging, profitability by project and the annual summary.
 - **Install the app**: user menu → *Install app* (or Settings → My profile → *This device*: install, allow notifications and send a test one).
 - **Settings** (topbar row 2 / sidebar list the 10 sections):
-  - **Users & roles**: invite (modal), change a role inline, deactivate, revoke invitations, and edit the **permission matrix** (no access / view / full per module and role).
+  - **Users & roles**: invite (inline panel), change a role inline, deactivate, revoke invitations, and edit the **permission matrix** (no access / view / full per module and role).
   - **View as role**: user menu → *View as role (demo)* or Settings → Users & roles. Try **Viewer**: Finance and AI show a *No access* page, the AI button disappears and Settings is blocked; **Designer** sees Settings read-only.
   - **Taxes & billing**: change the tax rate (e.g. 8.5%) → new estimates use it, existing documents keep the rate they were created with.
   - **Organization**: company letterhead (printed on estimates/invoices), logo upload, **brand color** with a live preview and a contrast check, applied to the whole app on save.
@@ -100,7 +102,7 @@ The CRM is a **Progressive Web App**: it installs like a native app and works of
 - **`docs/DEMO_ACCOUNTS.md`: demo sign-in accounts** (emails, password, what each role can do).
 - **`docs/DEVELOPMENT_GUIDE.md`: development guide (Spanish)**: architecture, design system, layout, patterns, components, i18n, auth, PWA, QA, recipes, and how to fork this repo into a simpler template.
 - `DECISIONS.md`: design decisions, default look (tokens), and assumptions.
-- `STRUCTURE.md`: folder map, routes, and the "Action → Modal or Page" table.
+- `STRUCTURE.md`: folder map, routes, and the "Action → Page or Panel" table and the fill pages.
 - `src/data/schema.md`: entities and fields, the base for the database model.
 - **`docs/API_INTEGRATION.md`: how to wire a real backend (Supabase or REST)**: auth, list contract, permissions/RLS, the endpoint map for every service function, files, realtime, AI, push and a migration checklist.
 - `docs/screenshots/`: screenshots.

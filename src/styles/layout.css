@@ -430,3 +430,81 @@
 
 /* Windows 10 focus rectangle on the dark sidebar and sign-in panel */
 .sidebar, .auth__brand { --focus-ring: 0 0 0 2px var(--brand-contrast); }
+
+/* ===================== Explorer-style navigation ===================== */
+/* Address bar: Back · Forward · Up + location path (desktop). Phones keep the page's own Back. */
+.addressbar { display: none; }
+@media (min-width: 1024px) {
+  .addressbar { display: flex; align-items: center; gap: var(--sp-2); margin: 0 0 var(--sp-4); min-width: 0; }
+  .page-shell__nav { display: none; }
+}
+.addressbar__buttons { display: flex; gap: 2px; flex: none; }
+.addressbar__btn {
+  width: 32px; height: 32px; display: grid; place-items: center; border: 0; background: transparent; color: var(--text);
+  border-radius: var(--radius-sm); cursor: pointer;
+}
+.addressbar__btn svg { width: 16px; height: 16px; }
+.addressbar__btn:hover:not(:disabled) { background: var(--surface-3); }
+.addressbar__btn:disabled { color: var(--text-subtle); opacity: .45; cursor: default; }
+.addressbar__path {
+  flex: 1; min-width: 0; height: 32px; display: flex; align-items: center; gap: 2px; padding: 0 var(--sp-2);
+  list-style: none; margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  overflow: hidden; white-space: nowrap; font-size: var(--fs-13);
+}
+.addressbar__path li { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.addressbar__path li:last-child { flex: 1; }
+.addressbar__path a, .addressbar__path span { padding: 3px 6px; border-radius: var(--radius-sm); color: var(--text-muted); text-decoration: none; overflow: hidden; text-overflow: ellipsis; }
+.addressbar__path a:hover { background: var(--surface-2); color: var(--text); }
+.addressbar__path [aria-current='page'] { color: var(--text); font-weight: var(--fw-medium); }
+.addressbar__path svg { width: 14px; height: 14px; flex: none; color: var(--text-subtle); }
+
+/* Inline panel: forms and viewers open inside the page, never as a floating window. */
+.inline-panel { margin: 0 0 var(--sp-4); background: var(--surface); border: 1px solid var(--border); border-top: 2px solid var(--accent); scroll-margin-top: calc(var(--topbar-h) + var(--sp-4)); min-width: 0; }
+.inline-panel:focus { outline: none; }
+.inline-panel:focus-visible { box-shadow: var(--focus-ring); }
+.inline-panel > .form-shell .form-body { overflow: visible; }
+.comms-side .inline-panel .form-header, .comms-side .inline-panel .form-body { padding: var(--sp-3); }
+.comms-side .inline-panel .form-footer { flex-wrap: wrap; }
+.addressbar__assistant {
+  flex: none; height: 32px; display: inline-flex; align-items: center; gap: 8px; padding: 0 12px;
+  border: 0; border-radius: var(--radius-sm); background: var(--surface-3); color: var(--text); font-size: var(--fs-13); font-weight: var(--fw-medium); cursor: pointer;
+}
+.addressbar__assistant svg { width: 16px; height: 16px; color: var(--accent-strong); }
+.addressbar__assistant:hover { box-shadow: inset 0 0 0 2px var(--text-subtle); }
+@media (min-width: 1024px) {
+  .ai-fab { display: none; }
+  /* No floating button on desktop: the bottom gap matches the sides. */
+  .content { padding-bottom: var(--sp-6); }
+}
+@media (min-width: 1280px) { .content { padding-bottom: var(--sp-8); } }
+
+/* ===================== Fill pages (desktop) ===================== */
+/* The page fits the window: header fixed in place, the `.fill` element takes the rest with the
+   same gap at the bottom as on the sides, and scrolls inside. See components/layout/FillPage.jsx. */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .app.is-fill .main { height: 100vh; height: 100dvh; min-height: 0; }
+  .app.is-fill .content { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .app.is-fill .content > * { flex: none; }
+  .app.is-fill .content > .fill { flex: 1 1 auto; min-height: 0; margin-bottom: 0; }
+  .app.is-fill .content > .page-head { margin-bottom: var(--sp-4); }
+  .app.is-fill .fill-scroll { overflow-y: auto; overscroll-behavior: contain; }
+  .app.is-fill .comms.fill, .app.is-fill .mail.fill { height: auto; min-height: 0; }
+  .app.is-fill .tabs + .tab-panel.fill { padding-top: var(--sp-4); }
+  /* Agenda: the calendar card fills; month rows stretch to the height, week/day grids scroll inside. */
+  .app.is-fill .cal-card { display: flex; flex-direction: column; overflow: hidden; }
+  .app.is-fill .cal-card > .card__body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .app.is-fill .cal-body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+  .app.is-fill .cal-body > .cal-month { min-height: 100%; grid-template-rows: auto; grid-auto-rows: minmax(96px, 1fr); }
+  .app.is-fill .cal-body .cal-dow { position: sticky; top: 0; z-index: 3; background: var(--surface); }
+  .app.is-fill .cal-body .tg { overflow: visible; }
+  .app.is-fill .cal-body .tg-head { position: sticky; top: 0; z-index: 3; }
+}
+/* Dashboard: compact KPIs and charts sized to the window, so each view fits without scrolling. */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .app.is-fill .dash-panel .kpi { padding: var(--sp-3) var(--sp-4); gap: 4px; }
+  .app.is-fill .dash-panel .dash-section { margin-top: var(--sp-4); }
+  .app.is-fill .dash-panel .chart-box { height: clamp(140px, calc(100dvh - 750px), 360px); }
+}
+/* The address bar already shows where you are: the small module label above page titles goes away on desktop. */
+@media (min-width: 1024px) { .page-head__eyebrow { display: none; } }
+.inline-panel .doc-preview { max-height: 360px; }

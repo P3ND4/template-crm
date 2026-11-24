@@ -1,4 +1,4 @@
-import { FormShell, ModalShell } from '../shells/index.js';
+import { FormShell, InlinePanel } from '../shells/index.js';
 import { Field, Select, Textarea, useToast } from '../ui/index.js';
 import useForm from '../../hooks/useForm.js';
 import { useT } from '../../i18n/index.jsx';
@@ -7,7 +7,7 @@ import { communicationsService } from '../../services/index.js';
 export const CONSENT_SOURCES = ['web_form', 'signed_contract', 'verbal', 'reply_start'];
 
 /** Record SMS consent collected outside a text (who, how, when) — needed before reminders or promotions. */
-export default function ConsentModal({ contact, onClose, onSaved }) {
+export default function ConsentPanel({ contact, onClose, onSaved }) {
   const t = useT();
   const toast = useToast();
   const form = useForm({ source: 'web_form', note: '' }, {
@@ -19,9 +19,9 @@ export default function ConsentModal({ contact, onClose, onSaved }) {
     },
   });
   return (
-    <ModalShell open onClose={onClose} size="sm" dirty={form.dirty}>
+    <InlinePanel onClose={onClose} dirty={form.dirty}>
       {({ titleId, requestClose }) => (
-        <FormShell titleId={titleId} title={t('comms.sms.recordConsent')} subtitle={contact.name} onCancel={requestClose} onSubmit={form.submit} dirty={form.dirty} saving={form.saving} submitLabel={t('comms.sms.saveConsent')}>
+        <FormShell variant="panel" titleId={titleId} title={t('comms.sms.recordConsent')} subtitle={contact.name} onCancel={requestClose} onSubmit={form.submit} dirty={form.dirty} saving={form.saving} submitLabel={t('comms.sms.saveConsent')}>
           <div className="stack">
             <Field label={t('comms.sms.consentSource')}>
               <Select {...form.bind('source')} options={CONSENT_SOURCES.filter((s) => s !== 'reply_start').map((s) => ({ value: s, label: t(`comms.sms.source.${s}`) }))} />
@@ -33,6 +33,6 @@ export default function ConsentModal({ contact, onClose, onSaved }) {
           </div>
         </FormShell>
       )}
-    </ModalShell>
+    </InlinePanel>
   );
 }

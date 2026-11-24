@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Check, Clock, FileText, Paperclip, Plus, ShoppingCart, Wallet, X } from 'lucide-react';
 import ListToolbar, { FilterSelect, SearchInput } from '../../components/list/ListToolbar.jsx';
-import { EXPENSE_CATEGORIES } from '../../components/quick/ExpenseModal.jsx';
+import { EXPENSE_CATEGORIES } from '../../components/quick/ExpenseForm.jsx';
 import { useQuickActions } from '../../components/quick/QuickActionsProvider.jsx';
-import { ModalShell } from '../../components/shells/index.js';
+import { InlinePanel } from '../../components/shells/index.js';
 import { Badge, Button, Card, DataState, IconButton, Kpi, Pagination, Table, useToast } from '../../components/ui/index.js';
 import useListState from '../../hooks/useListState.js';
 import useResource from '../../hooks/useResource.js';
@@ -77,6 +77,20 @@ export default function ExpensesPage() {
         <Kpi loading={!s} icon={ShoppingCart} label={t('expenses.openPOs')} value={money(s?.openPOs.amount)} meta={s && t('expenses.records', { n: s.openPOs.count })} />
         <Kpi loading={!s} icon={FileText} label={t('expenses.filteredTotal')} value={money(s?.filtered)} meta={s && t('expenses.records', { n: number(data.total) })} />
       </div>
+      <InlinePanel open={Boolean(receipt)} onClose={() => setReceipt(null)}>
+        {({ titleId, requestClose }) => receipt && (
+          <div className="form-shell">
+            <header className="form-header">
+              <div className="form-header__titles">
+                <h2 className="form-title" id={titleId}>{t('expenses.receiptTitle', { vendor: receipt.vendor?.company || receipt.vendor?.name })}</h2>
+                <p className="form-subtitle">{date(receipt.date)} · {money(receipt.amount)}</p>
+              </div>
+              <Button size="sm" onClick={requestClose}>{t('common.close')}</Button>
+            </header>
+            <div className="form-body"><div className="doc-preview" style={{ maxHeight: '50vh' }} aria-hidden="true"><Paperclip /><span>{receipt.receipt || t('projects.previewDemo')}</span></div></div>
+          </div>
+        )}
+      </InlinePanel>
       <Card flush className="list-card">
         <ListToolbar
           search={<SearchInput value={list.q} onChange={list.setQ} placeholder={t('expenses.search')} />}
@@ -104,20 +118,6 @@ export default function ExpensesPage() {
         </DataState>
       </Card>
 
-      <ModalShell open={Boolean(receipt)} onClose={() => setReceipt(null)} size="md">
-        {({ titleId, requestClose }) => receipt && (
-          <div className="form-shell">
-            <header className="form-header">
-              <div className="form-header__titles">
-                <h2 className="form-title" id={titleId}>{t('expenses.receiptTitle', { vendor: receipt.vendor?.company || receipt.vendor?.name })}</h2>
-                <p className="form-subtitle">{date(receipt.date)} · {money(receipt.amount)}</p>
-              </div>
-              <Button size="sm" onClick={requestClose}>{t('common.close')}</Button>
-            </header>
-            <div className="form-body"><div className="doc-preview" style={{ maxHeight: '50vh' }} aria-hidden="true"><Paperclip /><span>{receipt.receipt || t('projects.previewDemo')}</span></div></div>
-          </div>
-        )}
-      </ModalShell>
     </>
   );
 }

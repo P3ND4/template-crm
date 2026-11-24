@@ -8,7 +8,7 @@ import {
 import ChartCard, { LegendItem } from '../../components/charts/ChartCard.jsx';
 import HBarChart from '../../components/charts/HBarChart.jsx';
 import RevenueExpensesChart from '../../components/charts/RevenueExpensesChart.jsx';
-import { Avatar, Badge, Card, DataState, Kpi, SegmentedControl, Skeleton, SkeletonList } from '../../components/ui/index.js';
+import { Avatar, Badge, Card, DataState, Kpi, SegmentedControl, Skeleton, SkeletonList, Tabs } from '../../components/ui/index.js';
 import { useQuickActions } from '../../components/quick/QuickActionsProvider.jsx';
 import { useT } from '../../i18n/index.jsx';
 import useResource from '../../hooks/useResource.js';
@@ -17,12 +17,18 @@ import { ago, date, dayLabel, money, moneyCompact, number, percent, time } from 
 import { dashboardService, tasksService } from '../../services/index.js';
 import { DASHBOARD_RANGES } from '../../services/dashboardService.js';
 import cx from '../../lib/cx.js';
+import { useFillPage } from '../../components/layout/FillPage.jsx';
+
+const VIEWS = ['overview', 'performance', 'activity'];
 
 
 export default function DashboardPage() {
   const t = useT();
   const quick = useQuickActions();
   const [range, setRange] = useUrlState('range', 'thisMonth');
+  // Three views instead of one long page: the content fits the window (scrolls inside the panel if needed).
+  const [view, setView] = useUrlState('view', 'overview');
+  useFillPage();
   const { data, loading, error, refetch } = useResource(() => dashboardService.getSummary({ range }), [range]);
   const k = data?.kpis;
   const rangeLabel = t(`dashboard.ranges.${range}`);
@@ -45,10 +51,13 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      <Tabs label={t('dashboard.viewsLabel')} value={view} onChange={setView} tabs={VIEWS.map((v) => ({ id: v, label: t(`dashboard.views.${v}`) }))} />
+
       {error ? (
         <Card><DataState error={error} onRetry={refetch} /></Card>
       ) : (
-        <>
+        <div className="tab-panel fill fill-scroll dash-panel" role="tabpanel">
+          {view === 'overview' && (<>
           {/* ---------------- KPIs ---------------- */}
           <section aria-label="Key metrics" className="dash-kpis">
             <Kpi loading={loading} icon={CircleDollarSign} label={t('dashboard.kpi.revenue')} value={money(k?.revenue)} meta={rangeLabel} />
@@ -117,6 +126,9 @@ export default function DashboardPage() {
             </ChartCard>
           </div>
 
+          </>)}
+
+          {view === 'performance' && (<>
           {/* ---------------- Charts row 2 ---------------- */}
           <div className="grid grid-3 dash-section">
             <ChartCard
@@ -179,7 +191,10 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* ---------------- Lists ---------------- */}
+          </>)}
+
+          {view === 'activity' && (
+          /* ---------------- Lists ---------------- */
           <div className="grid grid-3 dash-section">
             <Card title={t('dashboard.lists.appointments')} subtitle={t('dashboard.lists.next7')} flush actions={<Link to="/crm/agenda" className="caps">{t('common.viewAll')}</Link>}>
               <DataState loading={loading} skeleton={<SkeletonList rows={5} />} empty={data && !data.lists.appointments.length} emptyTitle={t('dashboard.lists.noAppointments')} emptyBody="" compact emptyIcon={CalendarDays}>
@@ -228,7 +243,10 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* ---------------- Project health ---------------- */}
+          )}
+
+          {view === 'performance' && (
+          /* ---------------- Project health ---------------- */
           <div className="grid grid-3 dash-section">
             <Card
               className="span-2"
@@ -290,7 +308,8 @@ export default function DashboardPage() {
               </DataState>
             </Card>
           </div>
-        </>
+          )}
+        </div>
       )}
     </>
   );

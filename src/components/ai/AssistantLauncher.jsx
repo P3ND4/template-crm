@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { Bot, Maximize2, X } from 'lucide-react';
@@ -8,7 +8,10 @@ import Button, { IconButton } from '../ui/Button.jsx';
 import AssistantChat from './AssistantChat.jsx';
 import { useSession } from '../../app/SessionProvider.jsx';
 
-/** Floating AI assistant (bottom-right) → side panel. */
+/**
+ * AI assistant → side panel. Phones: floating button (bottom-right). Desktop: the button lives in the
+ * address bar (no floating elements over the page); it opens the panel with the `assistant:open` event.
+ */
 export default function AssistantLauncher() {
   const t = useT();
   const { pathname } = useLocation();
@@ -16,6 +19,11 @@ export default function AssistantLauncher() {
   const [open, setOpen] = useState(false);
   const panel = useRef(null);
   useFocusTrap(panel, open);
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener('assistant:open', onOpen);
+    return () => window.removeEventListener('assistant:open', onOpen);
+  }, []);
   // Hidden on the full assistant page, when turned off in Settings → AI, or when the role has no AI access.
   if (pathname.startsWith('/ai/assistant') || !assistantEnabled || access('ai') === 'none') return null;
   return (

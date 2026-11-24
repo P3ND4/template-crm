@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { BadgeCheck, Copy, Mail, MessageCircle, Pencil, Plus, Trash2, MessageSquareText } from 'lucide-react';
 import { RowMenu } from '../../components/crm/bits.jsx';
-import { ConfirmDialog, FormShell, ModalShell } from '../../components/shells/index.js';
+import { ConfirmDialog, FormShell, InlinePanel } from '../../components/shells/index.js';
 import { Badge, Button, DataState, Field, Input, SkeletonList, Tabs, Textarea, useToast } from '../../components/ui/index.js';
 import useForm from '../../hooks/useForm.js';
 import useResource from '../../hooks/useResource.js';
@@ -23,7 +23,7 @@ function smsHintText(t, text) {
   return t('comms.sms.counter', { n: i.units, segments: i.segments, encoding: i.encoding === 'GSM-7' ? 'GSM-7' : 'Unicode' });
 }
 
-function TemplateModal({ channel, template, onClose, onSaved }) {
+function TemplatePanel({ channel, template, onClose, onSaved }) {
   const t = useT();
   const toast = useToast();
   const bodyRef = useRef(null);
@@ -55,7 +55,7 @@ function TemplateModal({ channel, template, onClose, onSaved }) {
     requestAnimationFrame(() => { el?.focus(); el?.setSelectionRange(at + token.length, at + token.length); });
   };
   return (
-    <ModalShell open onClose={onClose} size="lg" dirty={form.dirty}>
+    <InlinePanel onClose={onClose} dirty={form.dirty}>
       {({ titleId, requestClose }) => (
         <FormShell
           titleId={titleId}
@@ -98,7 +98,7 @@ function TemplateModal({ channel, template, onClose, onSaved }) {
           </div>
         </FormShell>
       )}
-    </ModalShell>
+    </InlinePanel>
   );
 }
 
@@ -138,6 +138,7 @@ export default function TemplatesSettings() {
           { id: 'email', label: t('settings.channels.email'), count: data?.email.length },
         ]}
       />
+      {editing && <TemplatePanel key={editing.template?.id || 'new'} channel={tab} template={editing.template} onClose={() => setEditing(null)} onSaved={refetch} />}
       <div className="tab-panel" role="tabpanel">
         <DataState
           loading={loading}
@@ -177,7 +178,6 @@ export default function TemplatesSettings() {
           </ul>
         </DataState>
       </div>
-      {editing && <TemplateModal key={editing.template?.id || 'new'} channel={tab} template={editing.template} onClose={() => setEditing(null)} onSaved={refetch} />}
       <ConfirmDialog
         open={Boolean(removing)}
         title={t('settings.templates.deleteTitle')}

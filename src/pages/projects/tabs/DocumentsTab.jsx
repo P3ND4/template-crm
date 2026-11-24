@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Eye, FileText, FolderOpen, Image as ImageIcon, Upload } from 'lucide-react';
-import { ModalShell } from '../../../components/shells/index.js';
+import { InlinePanel } from '../../../components/shells/index.js';
 import { Badge, Button, Card, IconButton, Select, useToast } from '../../../components/ui/index.js';
 import { useT } from '../../../i18n/index.jsx';
 import { date } from '../../../lib/format.js';
@@ -37,6 +37,17 @@ export default function DocumentsTab({ d, projectId }) {
           </label>
         </div>
       </Card>
+      <InlinePanel open={Boolean(preview)} onClose={() => setPreview(null)}>
+        {({ titleId, requestClose }) => preview && (
+          <div className="form-shell">
+            <header className="form-header">
+              <div className="form-header__titles"><h2 className="form-title" id={titleId}>{preview.name}</h2><p className="form-subtitle">{t(`docTypes.${preview.type}`)} · {preview.size}</p></div>
+              <Button size="sm" onClick={requestClose}>{t('common.close')}</Button>
+            </header>
+            <div className="form-body"><div className="doc-preview" aria-hidden="true"><FileText /><span>{t('projects.previewDemo')}</span></div></div>
+          </div>
+        )}
+      </InlinePanel>
       <div className="grid grid-2">
         {TYPES.map((tp) => {
           const list = docs.filter((x) => x.type === tp);
@@ -64,17 +75,6 @@ export default function DocumentsTab({ d, projectId }) {
           );
         })}
       </div>
-      <ModalShell open={Boolean(preview)} onClose={() => setPreview(null)} size="lg">
-        {({ titleId, requestClose }) => preview && (
-          <div className="form-shell">
-            <header className="form-header">
-              <div className="form-header__titles"><h2 className="form-title" id={titleId}>{preview.name}</h2><p className="form-subtitle">{t(`docTypes.${preview.type}`)} · {preview.size}</p></div>
-              <Button size="sm" onClick={requestClose}>{t('common.close')}</Button>
-            </header>
-            <div className="form-body"><div className="doc-preview" aria-hidden="true"><FileText /><span>{t('projects.previewDemo')}</span></div></div>
-          </div>
-        )}
-      </ModalShell>
     </div>
   );
 }

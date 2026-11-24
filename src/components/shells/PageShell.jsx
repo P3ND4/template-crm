@@ -1,12 +1,15 @@
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BackButton from './BackButton.jsx';
+import { usePageCrumbs } from '../layout/AddressBar.jsx';
 
 /**
- * PageShell — long flows on their own route: Back button (top-left) + discreet breadcrumb.
+ * PageShell — long flows on their own route. Desktop: the crumbs go to the address bar (Back /
+ * Forward / Up live there). Phones: Back button (top-left) + discreet breadcrumb here.
  * breadcrumbs: [{ label, to? }] — last item is the current page.
  */
 export default function PageShell({ fallback, breadcrumbs = [], onBack, children }) {
+  usePageCrumbs(breadcrumbs);
   return (
     <div className="page-shell">
       <div className="page-shell__nav">
