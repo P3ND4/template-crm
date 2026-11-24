@@ -2,7 +2,7 @@
  * iOS launch screens (apple-touch-startup-image). iOS ignores the manifest's background_color: without
  * these, an installed app opens on a blank white screen. One PNG per iPhone screen size (portrait),
  * brand background + wordmark. Writes public/splash/*.png and prints the <link> tags for index.html.
- *   npm run splash     (WORD="Template" DOT="." BG="#0F172A" FG="#F8FAFC" ACCENT="#818CF8")
+ *   npm run splash     (WORD="Template" DOT="." BG="#1F1F1F" FG="#F3F3F3" ACCENT="#4DA3EE")
  * Needs Playwright (see README).
  */
 const fs = require('fs');
@@ -11,7 +11,7 @@ const { chromium } = require('playwright');
 
 const ROOT = path.join(__dirname, '..');
 const FONT_FILE = path.join(ROOT, 'node_modules/@fontsource/work-sans/files/work-sans-latin-600-normal.woff2');
-const { WORD = 'Template', DOT = '.', BG = '#0F172A', FG = '#F8FAFC', ACCENT = '#818CF8' } = process.env;
+const { WORD = 'Template', DOT = '.', BG = '#1F1F1F', FG = '#F3F3F3', ACCENT = '#4DA3EE' } = process.env;
 const font = fs.readFileSync(FONT_FILE).toString('base64');
 
 // [CSS width, CSS height, device pixel ratio] — current and recent iPhones (portrait).

@@ -1,7 +1,7 @@
 /*
  * Generates the PWA / favicon PNGs in public/icons from a text mark + brand colors.
  *   npm run icons                      (defaults below)
- *   MARK="A" DOT="." BG="#0F172A" FG="#FFFFFF" ACCENT="#38BDF8" npm run icons
+ *   MARK="A" DOT="." BG="#1F1F1F" FG="#FFFFFF" ACCENT="#38BDF8" npm run icons
  * Font: Work Sans 600 from @fontsource (change FONT_FILE for another brand font). Needs Playwright.
  */
 const fs = require('fs');
@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
 
 const ROOT = path.join(__dirname, '..');
 const FONT_FILE = path.join(ROOT, 'node_modules/@fontsource/work-sans/files/work-sans-latin-600-normal.woff2');
-const { MARK = 'T', DOT = '.', BG = '#0F172A', FG = '#F8FAFC', ACCENT = '#818CF8' } = process.env;
+const { MARK = 'T', DOT = '.', BG = '#1F1F1F', FG = '#F3F3F3', ACCENT = '#4DA3EE' } = process.env;
 const font = fs.readFileSync(FONT_FILE).toString('base64');
 
 // [file, size px, empty margin share (maskable needs ~20%), corner radius]

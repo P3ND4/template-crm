@@ -19,8 +19,8 @@ const pwa = VitePWA({
     display: 'standalone',
     display_override: ['window-controls-overlay', 'standalone'],
     orientation: 'any',
-    background_color: '#F8FAFC',
-    theme_color: '#0F172A',
+    background_color: '#F3F3F3',
+    theme_color: '#1F1F1F',
     categories: ['business', 'productivity'],
     icons: [
       { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },

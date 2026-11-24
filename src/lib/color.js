@@ -33,12 +33,12 @@ export function accentVars(hex, dark = false) {
   if (dark) {
     // Lighten until dark text on the accent (buttons) reaches 4.5:1.
     let w = 0.28;
-    while (w < 0.9 && contrast(mix(hex, '#FFFFFF', w), '#0B1120') < 4.6) w += 0.04;
+    while (w < 0.9 && contrast(mix(hex, '#FFFFFF', w), '#171717') < 4.6) w += 0.04;
     return {
       '--accent': mix(hex, '#FFFFFF', w),
       '--accent-hover': mix(hex, '#FFFFFF', Math.min(w + 0.12, 0.95)),
       '--accent-strong': mix(hex, '#FFFFFF', Math.min(w + 0.27, 0.95)),
-      '--accent-soft': mix(hex, '#0B1120', 0.78),
+      '--accent-soft': mix(hex, '#171717', 0.78),
     };
   }
   return {

@@ -81,7 +81,7 @@ export default function ContactsPage() {
         <DataState error={error} onRetry={refetch} empty={data && data.total === 0} emptyIcon={Contact} emptyTitle={t('list.noResults')} emptyBody="">
           {list.view === 'cards' ? (
             <div className="cards-grid">
-              {loading && !data ? Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={140} radius={10} />) : data?.items.map((c) => (
+              {loading && !data ? Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={140} />) : data?.items.map((c) => (
                 <a key={c.id} href={`/crm/contacts/${c.id}`} className="record-card" onClick={(e) => { e.preventDefault(); navigate(`/crm/contacts/${c.id}`); }}>
                   <div className="record-card__head">
                     <Avatar name={c.name} size="lg" title="" />

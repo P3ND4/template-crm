@@ -86,7 +86,7 @@ export default function LeadsPage() {
         >
           {list.view === 'cards' ? (
             <div className="cards-grid">
-              {loading && !data ? Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={150} radius={10} />) : data?.items.map((l) => (
+              {loading && !data ? Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={150} />) : data?.items.map((l) => (
                 <a key={l.id} href={`/crm/leads/${l.id}`} className="record-card" onClick={(e) => { e.preventDefault(); navigate(`/crm/leads/${l.id}`); }}>
                   <div className="record-card__head">
                     <PersonCell name={l.name} sub={`${l.neighborhood} · ${t(`services.${l.serviceType}`)}`} />

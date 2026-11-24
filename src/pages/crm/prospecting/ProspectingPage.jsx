@@ -95,7 +95,7 @@ function ListsTab({ onOpenList }) {
   return (
     <div className="grid grid-3" style={{ alignItems: 'start' }}>
       <div className="span-2 cards-grid" style={{ padding: 0 }}>
-        {loading && !lists ? Array.from({ length: 4 }, (_, i) => <Skeleton key={i} height={170} radius={10} />) : lists?.map((l) => (
+        {loading && !lists ? Array.from({ length: 4 }, (_, i) => <Skeleton key={i} height={170} />) : lists?.map((l) => (
           <article key={l.id} className="record-card" style={{ cursor: 'default' }}>
             <div className="row-between" style={{ alignItems: 'flex-start' }}>
               <div style={{ minWidth: 0 }}>
@@ -168,7 +168,7 @@ function SequencesTab() {
   const { data, loading } = useResource(() => prospectingService.sequences(), []);
   return (
     <div className="grid grid-3">
-      {loading && !data ? Array.from({ length: 3 }, (_, i) => <Skeleton key={i} height={220} radius={14} />) : data?.map((s) => (
+      {loading && !data ? Array.from({ length: 3 }, (_, i) => <Skeleton key={i} height={220} />) : data?.map((s) => (
         <Card key={s.id} title={s.name} subtitle={t('prospecting.stepsCount', { n: s.steps.length })}>
           <ol className="timeline">
             {s.steps.map((step, i) => {

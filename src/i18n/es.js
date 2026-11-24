@@ -706,7 +706,7 @@ const es = {
     days: '{n} días',
     noBuffer: 'Sin margen',
     theme: { light: 'Claro', dark: 'Oscuro', system: 'Según el sistema' },
-    accent: { indigo: 'Índigo', blue: 'Azul', teal: 'Verde azulado', emerald: 'Esmeralda', rose: 'Rosa', slate: 'Pizarra' },
+    accent: { cobalt: 'Cobalto', teal: 'Verde azulado', green: 'Verde', purple: 'Morado', crimson: 'Carmesí', graphite: 'Grafito' },
     level: { none: 'Sin acceso', view: 'Ver', full: 'Total' },
     levelDesc: { none: 'El módulo muestra una página de sin acceso', view: 'Puede abrir y leer', full: 'Puede crear, editar y eliminar' },
     roleDesc: {
@@ -745,7 +745,7 @@ const es = {
       brand: 'Marca', brandDesc: 'Logo para documentos y color de acento para botones, enlaces y resaltados.',
       uploadLogo: 'Subir logo', replaceLogo: 'Cambiar logo', logoHint: 'PNG, SVG, JPG o WebP · hasta 512 KB · se muestra en presupuestos y facturas.',
       logoTooBig: 'El archivo pesa más de 512 KB.',
-      custom: 'Personalizado (hex)', pickColor: 'Elegir un color', resetBrand: 'Volver al color por defecto', badColor: 'Usa un color hex como #4F46E5.',
+      custom: 'Personalizado (hex)', pickColor: 'Elegir un color', resetBrand: 'Volver al color por defecto', badColor: 'Usa un color hex como #0063B1.',
       sampleButton: 'Botón principal', sampleLink: 'Texto de enlace', sampleTag: 'Resaltado',
       contrast: 'Contraste con texto blanco: {ratio}:1', lowContrast: 'Contraste bajo — elige un tono más oscuro',
       regional: 'Regional', regionalDesc: 'Valores por defecto para fechas, dinero y nuevos usuarios.',

@@ -61,7 +61,7 @@ export function SessionProvider({ children }) {
     let wco = null;
     try { wco = window.matchMedia('(display-mode: window-controls-overlay)'); } catch { /* old browsers */ }
     const apply = () => {
-      const color = wco?.matches ? (resolvedTheme === 'dark' ? '#0B1120' : '#F8FAFC') : (resolvedTheme === 'dark' ? '#020617' : '#0F172A');
+      const color = wco?.matches ? (resolvedTheme === 'dark' ? '#171717' : '#F3F3F3') : (resolvedTheme === 'dark' ? '#111111' : '#1F1F1F');
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
     };
     apply();

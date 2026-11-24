@@ -25,7 +25,7 @@ export const organization = {
   dateFormat: 'MM/dd/yyyy',
   weekStart: 'sunday',
   defaultLanguage: 'en',
-  accent: '#4F46E5',
+  accent: '#0063B1',
   logo: null, // data URL when the user uploads one (stays in the browser tab)
 };
 

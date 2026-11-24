@@ -30,7 +30,7 @@ export default function AiHubPage() {
       </div>
       <p className="notice" style={{ marginBottom: 20 }}><FlaskConical aria-hidden="true" />{t('ai.hub.demoNotice')}</p>
       <div className="ai-grid">
-        {!data ? Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={190} radius={14} />) : data.modules.map((m) => {
+        {!data ? Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={190} />) : data.modules.map((m) => {
           const meta = AI_META[m.module];
           const Icon = meta.icon;
           return (

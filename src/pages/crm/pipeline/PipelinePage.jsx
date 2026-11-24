@@ -93,7 +93,7 @@ export default function PipelinePage() {
             <Kpi loading={loading && !data} icon={Percent} label={t('pipeline.winRate')} value={percent(won.length + lost.length ? won.length / (won.length + lost.length) : null)} meta={t('pipeline.winRateHint', { won: won.length, lost: lost.length })} />
           </div>
           {loading && !data ? (
-            <div className="kanban">{STAGES.map((s) => <Skeleton key={s} height={360} radius={14} />)}</div>
+            <div className="kanban">{STAGES.map((s) => <Skeleton key={s} height={360} />)}</div>
           ) : (
             <Kanban label={t('nav.pipeline')} columns={columns} items={visible} onMove={move} renderCard={(d) => <DealCard deal={d} t={t} />} />
           )}

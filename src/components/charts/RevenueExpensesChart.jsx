@@ -29,8 +29,8 @@ export default function RevenueExpensesChart({ data, labels }) {
           <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: v['--chart-grid'] }} tick={{ fill: v['--chart-axis'], fontSize: 12 }} interval="preserveStartEnd" />
           <YAxis tickLine={false} axisLine={false} width={56} tick={{ fill: v['--chart-axis'], fontSize: 12 }} tickFormatter={moneyCompact} />
           <Tooltip content={<TooltipContent labels={labels} colors={colors} />} cursor={{ fill: v['--surface-2'] }} />
-          <Bar dataKey="revenue" name={labels.revenue} fill={colors.revenue} radius={[4, 4, 0, 0]} maxBarSize={14} isAnimationActive={false} />
-          <Bar dataKey="expenses" name={labels.expenses} fill={colors.expenses} radius={[4, 4, 0, 0]} maxBarSize={14} isAnimationActive={false} />
+          <Bar dataKey="revenue" name={labels.revenue} fill={colors.revenue} maxBarSize={14} isAnimationActive={false} />
+          <Bar dataKey="expenses" name={labels.expenses} fill={colors.expenses} maxBarSize={14} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>

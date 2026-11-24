@@ -707,7 +707,7 @@ const en = {
     days: '{n} days',
     noBuffer: 'No buffer',
     theme: { light: 'Light', dark: 'Dark', system: 'Match system' },
-    accent: { indigo: 'Indigo', blue: 'Blue', teal: 'Teal', emerald: 'Emerald', rose: 'Rose', slate: 'Slate' },
+    accent: { cobalt: 'Cobalt', teal: 'Teal', green: 'Green', purple: 'Purple', crimson: 'Crimson', graphite: 'Graphite' },
     level: { none: 'No access', view: 'View', full: 'Full' },
     levelDesc: { none: 'Module hidden behind a no-access page', view: 'Can open and read', full: 'Can create, edit and delete' },
     roleDesc: {
@@ -746,7 +746,7 @@ const en = {
       brand: 'Brand', brandDesc: 'Logo for documents and the accent color used on buttons, links and highlights.',
       uploadLogo: 'Upload logo', replaceLogo: 'Replace logo', logoHint: 'PNG, SVG, JPG or WebP · up to 512 KB · shown on estimates and invoices.',
       logoTooBig: 'That file is larger than 512 KB.',
-      custom: 'Custom (hex)', pickColor: 'Pick a custom color', resetBrand: 'Reset to the default color', badColor: 'Use a hex color like #4F46E5.',
+      custom: 'Custom (hex)', pickColor: 'Pick a custom color', resetBrand: 'Reset to the default color', badColor: 'Use a hex color like #0063B1.',
       sampleButton: 'Primary button', sampleLink: 'Link text', sampleTag: 'Highlight',
       contrast: 'Contrast with white text: {ratio}:1', lowContrast: 'Low contrast — pick a darker shade',
       regional: 'Regional', regionalDesc: 'Defaults for dates, money and new teammates.',

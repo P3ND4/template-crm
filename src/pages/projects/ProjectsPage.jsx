@@ -119,7 +119,7 @@ export default function ProjectsPage() {
         >
           {list.view === 'cards' ? (
             <div className="cards-grid cards-grid--projects">
-              {loading && !data ? Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={260} radius={10} />) : data?.items.map((p) => (
+              {loading && !data ? Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={260} />) : data?.items.map((p) => (
                 <a key={p.id} href={`/projects/${p.id}`} className="record-card project-card" onClick={(e) => { e.preventDefault(); navigate(`/projects/${p.id}`); }}>
                   <ProjectCover project={p} />
                   <div className="row-between" style={{ alignItems: 'flex-start' }}>

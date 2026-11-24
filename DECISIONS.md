@@ -4,25 +4,38 @@
 
 | Role | Value | Token |
 |---|---|---|
-| Page background | `#F8FAFC` (slate-50) | `--bg` |
-| Text / sidebar | `#0F172A` (slate-900) | `--text`, `--brand` |
-| Raised dark surfaces | `#1E293B`, `#334155` | `--brand-2`, `--brand-3` |
-| Accent (primary buttons, links, active) | `#4F46E5` indigo (white text 6.3:1, AA) | `--accent` |
-| Borders | `#E2E8F0`, `#CBD5E1` | `--border`, `--border-strong` |
-| Radius | `10px` | `--radius` |
+| Page background | `#F3F3F3` (neutral gray) | `--bg` |
+| Text / sidebar | `#1B1B1B` text, `#1F1F1F` graphite sidebar | `--text`, `--brand` |
+| Raised dark surfaces | `#2B2B2B`, `#3A3A3A` | `--brand-2`, `--brand-3` |
+| Accent (primary buttons, links, active) | `#0063B1` cobalt, the Windows 10 default accent (white text 6.1:1, AA) | `--accent` |
+| Borders | `#E1E1E1`, `#C4C4C4` | `--border`, `--border-strong` |
+| Radius | `0` containers, `2px` controls (see Shape language) | `--radius-*` |
 | Display font | **Work Sans** (titles, wordmark) | `--font-display` |
 | Logo | Text wordmark "Template." (period included), mark "T." | Sidebar, topbar, login, icons |
 | Buttons | UPPERCASE + letter-spacing | `.btn` |
 
-Everything lives in `src/styles/tokens.css` (and the accent presets in `src/app/theme.js`), so a new brand means editing those two files, then `npm run icons` and `npm run splash` with the brand mark and colors. The accent can also be changed at runtime in Settings → Organization (6 AA presets: indigo, blue, teal, emerald, rose, slate, or any hex with a contrast check).
+Everything lives in `src/styles/tokens.css` (and the accent presets in `src/app/theme.js`), so a new brand means editing those two files, then `npm run icons` and `npm run splash` with the brand mark and colors. The accent can also be changed at runtime in Settings → Organization (6 AA presets from the Windows accent palette: cobalt, teal, green, purple, crimson, graphite, or any hex with a contrast check).
+
+## Shape language (Windows 8/10 inspired)
+
+- **Square containers**: cards, panels, modals, kanban columns and tiles use `--radius-lg: 0`.
+- **2px controls**: buttons, inputs, menus, chips and badges use `--radius-sm` / `--radius` / `--radius-pill` = `2px`. Only switches (`--radius-round`), avatars and status dots stay round.
+- **Flat**: `--shadow-1: none`; cards rely on a 1px border. Overlays (menus, modals, toasts) keep `--shadow-2/3`.
+- **Buttons**: secondary buttons are gray (`--surface-3`) with no border; hover adds a 2px inset ring, press scales to 98%.
+- **Inputs**: focus shows a 2px accent underline (Windows 10 text box) instead of a glow.
+- **Focus**: a 2px rectangle in the text color (`--focus-ring`); white on the dark sidebar and a double ring on filled buttons.
+- **Selection**: 4px accent bar on the active sidebar item; segmented controls and channel tabs underline the selected option (Pivot style).
+- **Type**: page titles are large and light (Work Sans 300, 36px on desktop), the Metro look.
+- To go back to soft corners, change the four radius tokens and `--shadow-1` in `tokens.css`.
 
 ## Typography
 - **Inter** is used for the whole UI. It is loaded locally with `@fontsource/inter` (400/500/600/700) and uses `tnum` for figures.
 - **Work Sans** is used only for the wordmark and page titles. Also loaded locally. Swap `--font-display` for another brand font.
 
 ## Color & data viz
-- Status colors pass AA as text on white and on their soft backgrounds: success `#15803D`, warning `#B45309`, danger `#B91C1C`, info `#1D4ED8`.
-- Chart series: `--chart-1 #4F46E5` (indigo) and `--chart-2 #D97706` (amber). Blue vs orange stays distinguishable with color-vision deficiencies and both are ≥3:1 against the surface. Dark theme uses lighter versions (`#818CF8`, `#FBBF24`).
+- Status colors pass AA as text on white and on their soft backgrounds: success `#107C10`, warning `#9D5D00`, danger `#C42B1C`, info `#005A9E`.
+- Chart series: `--chart-1 #0063B1` (cobalt) and `--chart-2 #E3008C` (magenta). Blue vs magenta stays distinguishable with color-vision deficiencies and both are ≥3:1 against the surface. Dark theme uses lighter versions (`#4DA3EE`, `#FF5BC1`).
+- Project covers are flat Windows tile colors (cobalt, purple, teal, crimson, green, orange), not gradients. The sign-in panel shows a small tile mosaic.
 - Charts have one axis, thin bars with 4px rounded ends, a legend when there are 2+ series, a hover tooltip, and a **"Show data table"** view on every chart.
 - **No invented deltas or targets.** The KPIs only show factual context (count, range). A missing value renders "—".
 

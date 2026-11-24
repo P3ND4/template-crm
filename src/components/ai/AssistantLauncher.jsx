@@ -29,7 +29,7 @@ export default function AssistantLauncher() {
         <div className="ai-panel-root" onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}>
           <div className="ai-panel" ref={panel} role="dialog" aria-modal="false" aria-label={t('ai.nav.assistant')}>
             <header className="form-header">
-              <span className="ai-card__icon" style={{ width: 32, height: 32, borderRadius: 10 }} aria-hidden="true"><Bot size={16} /></span>
+              <span className="ai-card__icon" style={{ width: 32, height: 32, borderRadius: 0 }} aria-hidden="true"><Bot size={16} /></span>
               <div className="form-header__titles"><h2 className="form-title">{t('ai.nav.assistant')}</h2><p className="form-subtitle">{t('ai.assistant.panelSub')}</p></div>
               <Button size="sm" variant="ghost" plain icon={Maximize2} to="/ai/assistant" onClick={() => setOpen(false)} aria-label={t('comms.expand')} />
               <IconButton icon={X} label={t('common.close')} onClick={() => setOpen(false)} />

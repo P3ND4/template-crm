@@ -172,7 +172,7 @@ createBrowserRouter([
 | Gráficas | `--chart-1 --chart-2 --chart-grid --chart-axis` | validados para daltonismo |
 | Tipografía | `--font-sans --font-display --fs-12…32 --fw-* --lh-* --tracking-caps` | Inter + Work Sans |
 | Espaciado | `--sp-1…12` | grid de 4 px |
-| Forma | `--radius-sm/--radius/--radius-lg/--radius-pill --shadow-1/2/3 --focus-ring` | |
+| Forma | `--radius-sm/--radius/--radius-lg/--radius-pill/--radius-round --shadow-1/2/3 --focus-ring` | Estilo Windows 8/10: contenedores rectos (0), controles 2px, sin sombra en tarjetas |
 | Layout | `--sidebar-w --topbar-row-h --subbar-h --topbar-h --content-max` | `--topbar-h` cambia en `.app` |
 | Modales | `--modal-sm/md/lg --modal-max-h` | 480 / 640 / 840 |
 | Capas | `--z-sticky 10 · --z-sidebar 30 · --z-topbar 40 · --z-dropdown 50 · --z-modal 100 · --z-toast 200` | no inventes z-index |
@@ -561,7 +561,7 @@ Objetivo: quedarte con **el esqueleto** (layout, shells, componentes, hooks, ser
 
 - **Paleta neutra:** `--bg #F8FAFC`, `--surface #FFFFFF`, `--border #E2E8F0`, `--text #0F172A`, `--text-muted #475569`, `--brand #0F172A` (sidebar), `--accent` = un solo color de marca con contraste AA sobre blanco (comprueba con `contrast()` de `lib/color.js`). Ajusta `--focus-ring` al nuevo acento.
 - **Tipografía única:** solo Inter (o la fuente del sistema): `--font-display: var(--font-sans)`. Quita `text-transform: uppercase` de `.btn` si quieres botones más sobrios.
-- **Menos sombra y radio:** `--shadow-1: none`, `--radius: 8px`.
+- **Bordes suaves otra vez:** `--radius-sm: 6px; --radius: 10px; --radius-lg: 14px; --radius-pill: 999px` y `--shadow-1: 0 1px 2px rgba(0,0,0,.06)`.
 - **Sidebar claro** (opcional): `--brand: var(--surface)`, `--brand-contrast: var(--text)`, `--brand-muted: var(--text-muted)`, `--brand-2/3` en grises claros, y añade `border-right` a `.sidebar`.
 - Conserva la estructura (espaciado de 4 px, z-index, tamaños de modal, `--topbar-h`): es lo que mantiene todo alineado.
 
