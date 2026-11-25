@@ -137,7 +137,7 @@ export const aiPreferences = {
   tone: 'warm',
   replyLanguage: 'auto',
   humanReview: true,
-  dataAccess: { communications: true, projects: true, finance: false, contacts: true },
+  dataAccess: { communications: true, projects: true, finance: true, contacts: true },
   schedule: 'weekly',
   monthlyCredits: 5000,
   usedCredits: 1240,

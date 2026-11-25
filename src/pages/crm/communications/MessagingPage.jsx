@@ -72,7 +72,7 @@ export function ThreadView({ id, channel = 'whatsapp', showPanel, onTogglePanel,
               <Bubbles messages={messages} />
               <div ref={end} />
             </div>
-            <WaComposer channel={channel} windowOpen={data.windowOpen} sms={data.sms} firstName={conv.contact?.firstName} onSend={send} />
+            <WaComposer channel={channel} conversationId={id} windowOpen={data.windowOpen} sms={data.sms} firstName={conv.contact?.firstName} onSend={send} />
           </section>
           {showPanel && <ContactPanel conversation={conv} channel={channel} sms={data.sms} onConsentChange={refetch} />}
         </>

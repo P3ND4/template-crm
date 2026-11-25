@@ -599,6 +599,9 @@ const es = {
       platformsSub: '{n} de {total} fuentes del buscador conectadas (simulado)',
     },
     demoBadge: 'Datos de demostración',
+    liveBadge: 'IA en vivo · {model} ({provider})',
+    suggestReply: 'Sugerir respuesta con IA', drafting: 'Escribiendo…',
+    liveError: { rateLimit: 'Se agotó la cuota gratuita de la IA por ahora — te muestro la respuesta de demo.', offline: 'No se pudo conectar con la IA — te muestro la respuesta de demo.', failed: 'La IA no respondió — te muestro la respuesta de demo.' },
     lastRun: 'Última ejecución hace {when}',
     neverRun: 'Nunca ejecutado',
     nextRun: 'Próxima: {when}',
@@ -692,7 +695,7 @@ const es = {
       alsoFloating: 'También disponible desde el botón flotante en todas las pantallas.',
       hello: '¿En qué te ayudo hoy?', helloSub: 'Pregunta por facturas, agenda, leads, proyectos o mensajes.',
       thinking: 'Pensando…', suggestions: 'Preguntas sugeridas', placeholder: 'Pregunta algo… (Enter para enviar)',
-      open: 'Abrir asistente IA', panelSub: 'Demo — respuestas con datos del CRM',
+      open: 'Abrir asistente IA', panelSub: 'Demo — respuestas con datos del CRM', panelSubLive: 'Modelo en vivo — respuestas con los datos de tu CRM',
       prompts: { overdue: '¿Qué facturas están vencidas?', agenda: '¿Qué citas tengo en la agenda esta semana?', risk: '¿Qué proyectos tienen riesgo de presupuesto?', leads: 'Muéstrame los mejores leads nuevos', unanswered: '¿Qué mensajes necesitan respuesta?', revenue: '¿Cuántos ingresos hemos cobrado este mes?' },
       answers: {
         overdue: '{n} facturas están vencidas, por un total de {amount}. Estas son las mayores:',

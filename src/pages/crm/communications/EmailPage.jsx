@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Archive, ArrowLeft, Expand, File, Inbox, Mail, MailOpen, Paperclip, PenSquare, Reply, Send, Star, Tag, Trash2,
+  Archive, ArrowLeft, Expand, File, Inbox, Mail, MailOpen, Paperclip, PenSquare, Reply, Send, Sparkles, Star, Tag, Trash2,
 } from 'lucide-react';
 import { Attachment } from '../../../components/comms/Bubbles.jsx';
 import ChannelHeader from '../../../components/comms/ChannelHeader.jsx';
@@ -9,7 +9,9 @@ import { LABEL_COLORS, shortTime } from '../../../components/comms/util.js';
 import { SearchInput } from '../../../components/list/ListToolbar.jsx';
 import { Avatar, Badge, Button, DataState, EmptyState, IconButton, Menu, SkeletonList, Textarea, useToast } from '../../../components/ui/index.js';
 import useResource from '../../../hooks/useResource.js';
-import { useT } from '../../../i18n/index.jsx';
+import { useI18n, useT } from '../../../i18n/index.jsx';
+import useAiStatus from '../../../hooks/useAiStatus.js';
+import { aiService } from '../../../services/index.js';
 import { date, time } from '../../../lib/format.js';
 import { communicationsService, lookupService } from '../../../services/index.js';
 import { signature } from '../../../services/communicationsService.js';
@@ -27,6 +29,20 @@ export function EmailThread({ id, expanded, onChanged }) {
   const { data, loading, error, refetch } = useResource(() => communicationsService.thread(id), [id]);
   const [open, setOpen] = useState({});
   const [reply, setReply] = useState('');
+  const { locale } = useI18n();
+  const ai = useAiStatus();
+  const [drafting, setDrafting] = useState(false);
+  const suggest = async () => {
+    setDrafting(true);
+    try {
+      const text = await aiService.draftReply(id, { locale });
+      if (text) setReply(text);
+    } catch (e) {
+      toast.show(t(`ai.liveError.${e.code || 'failed'}`), { tone: 'danger' });
+    } finally {
+      setDrafting(false);
+    }
+  };
   const [msgs, setMsgs] = useState([]);
   useEffect(() => {
     if (data) {
@@ -97,6 +113,7 @@ export function EmailThread({ id, expanded, onChanged }) {
               onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendReply(e); }} />
             <div className="row-between">
               <Link to={`/crm/communications/email/compose?reply=${id}`} className="caps">{t('comms.openComposer')}</Link>
+              {ai.live && <Button size="sm" icon={Sparkles} onClick={suggest} disabled={drafting} style={{ marginLeft: 'auto' }}>{drafting ? t('ai.drafting') : t('ai.suggestReply')}</Button>}
               <Button type="submit" variant="primary" size="sm" icon={Send}>{t('comms.send')}</Button>
             </div>
           </form>

@@ -52,6 +52,23 @@ Then set the Healthcheck Path to `/health`, as in step 3 of Option A.
 ## Environment variables
 
 None are required in phase 1 (mock data only). `PORT` is injected by Railway.
+
+| Variable | Required | What it does |
+|---|---|---|
+| `GROQ_API_KEY` | No | Turns on the **live AI** (assistant + "Suggest a reply" in WhatsApp/SMS/Email). Without it the AI uses the demo answers. |
+
+### Live AI (free) — Groq
+
+1. Create a free account at console.groq.com (no card needed) → **API Keys** → **Create API key**.
+2. Railway → service → **Variables** → **New variable** `GROQ_API_KEY` = the key → **Deploy**. No rebuild needed: Caddy reads it at runtime.
+3. Check: `https://<your-domain>/api/ai/status` returns `{"live":true,...}`, and the assistant shows the green "Live AI" badge.
+
+How it works: the browser only ever calls `/api/ai/*` on its own domain. Caddy (`Caddyfile`) answers `/api/ai/status` and forwards `POST /api/ai/chat` to Groq's OpenAI-compatible API, adding the key. The key never reaches the browser, and the CSP stays `connect-src 'self'`. Requests without the app's `X-Requested-With` header are refused, so other sites can't use the proxy from a browser, but the URL is public: if the free quota runs out (Groq free tier: about 1,000 requests or 200K tokens a day), the AI shows the demo answers until it resets. No charge is possible on a free account with no card.
+
+The model is `openai/gpt-oss-20b` (fast, free). To change it, set `VITE_AI_MODEL` (build time) to another Groq model id. Any OpenAI-compatible provider works the same way: change the `reverse_proxy` target and path in `Caddyfile`.
+
+Locally: put `GROQ_API_KEY=...` in `.env.local` (git-ignored, no `VITE_` prefix so it stays out of the bundle) and run `npm run dev`; `vite.config.js` serves the same `/api/ai/*` routes.
+
 When the backend is connected later, add the `VITE_*` variables in Railway. Vite reads them **at build time**, so redeploy after changing them.
 Also add the API/Supabase origins to `connect-src` (and to `img-src` for storage) in the `Content-Security-Policy` line of `Caddyfile`.
 

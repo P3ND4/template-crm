@@ -3,15 +3,21 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight, Bot, Send, Sparkles } from 'lucide-react';
 import { useQuickActions } from '../quick/QuickActionsProvider.jsx';
 import { Badge, Button, IconButton, Textarea } from '../ui/index.js';
-import { useT } from '../../i18n/index.jsx';
+import { useI18n } from '../../i18n/index.jsx';
+import useAiStatus from '../../hooks/useAiStatus.js';
+import AiText from './AiText.jsx';
 import { aiService } from '../../services/index.js';
 import cx from '../../lib/cx.js';
 
 const SUGGESTIONS = ['overdue', 'agenda', 'risk', 'leads', 'unanswered', 'revenue'];
 
-/** Demo assistant: answers from CRM data via intent matching (aiService.ask) and suggests actions. */
+/**
+ * Assistant: answers from the CRM data with links and suggested actions (aiService.ask). With a live model the
+ * text is written by the model; otherwise it is the demo answer from intent matching.
+ */
 export default function AssistantChat({ compact, onNavigate }) {
-  const t = useT();
+  const { t, locale } = useI18n();
+  const ai = useAiStatus();
   const quick = useQuickActions();
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState('');
@@ -22,10 +28,11 @@ export default function AssistantChat({ compact, onNavigate }) {
   const ask = async (text) => {
     const q = text.trim();
     if (!q || thinking) return;
+    const history = messages.map((m) => ({ role: m.role, text: m.role === 'user' ? m.text : m.text || t(`ai.assistant.answers.${m.key}`, m.vars) }));
     setMessages((m) => [...m, { role: 'user', text: q }]);
     setDraft('');
     setThinking(true);
-    const a = await aiService.ask(q);
+    const a = await aiService.ask(q, { history, locale });
     setThinking(false);
     setMessages((m) => [...m, { role: 'assistant', ...a }]);
   };
@@ -38,7 +45,9 @@ export default function AssistantChat({ compact, onNavigate }) {
             <span className="ai-card__icon" aria-hidden="true"><Bot /></span>
             <p className="assistant__hello">{t('ai.assistant.hello')}</p>
             <p className="muted" style={{ fontSize: 13 }}>{t('ai.assistant.helloSub')}</p>
-            <Badge tone="warning">{t('ai.demoBadge')}</Badge>
+            {ai.live
+              ? <Badge tone="success">{t('ai.liveBadge', { model: ai.model.replace(/^.*\//, ''), provider: ai.provider })}</Badge>
+              : !ai.pending && <Badge tone="warning">{t('ai.demoBadge')}</Badge>}
           </div>
         )}
         <ol className="assistant__msgs">
@@ -46,7 +55,8 @@ export default function AssistantChat({ compact, onNavigate }) {
             <li key={i} className={cx('amsg', `amsg--${m.role}`)}>
               {m.role === 'user' ? <p>{m.text}</p> : (
                 <>
-                  <p>{t(`ai.assistant.answers.${m.key}`, m.vars)}</p>
+                  {m.text ? <AiText text={m.text} /> : <p>{t(`ai.assistant.answers.${m.key}`, m.vars)}</p>}
+                  {m.liveError && <p className="amsg__note">{t(`ai.liveError.${m.liveError}`)}</p>}
                   {m.items?.length > 0 && (
                     <ul className="amsg__items">
                       {m.items.map((it) => (

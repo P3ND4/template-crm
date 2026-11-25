@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Clock, Lock, Paperclip, Send, ShieldAlert, Zap } from 'lucide-react';
-import { useT } from '../../i18n/index.jsx';
+import { Clock, Lock, Paperclip, Send, ShieldAlert, Sparkles, Zap } from 'lucide-react';
+import { useI18n } from '../../i18n/index.jsx';
+import useAiStatus from '../../hooks/useAiStatus.js';
+import { aiService } from '../../services/index.js';
 import { time } from '../../lib/format.js';
 import { composeSms, smsInfo } from '../../lib/sms.js';
 import { TEMPLATES } from '../../services/communicationsService.js';
@@ -14,9 +16,12 @@ const MMS_MAX = 5 * 1024 * 1024;
  * WhatsApp: outside the 24 h customer-service window only approved templates can be sent.
  * SMS: no texting after STOP, quiet hours hold the message until morning, first text gets brand + opt-out
  * footer, live GSM-7 / Unicode segment counter, MMS = images up to 5 MB.
+ * With a live model, ✦ writes a suggested reply into the box (the user reviews and sends it).
  */
-export default function WaComposer({ channel = 'whatsapp', windowOpen, sms, firstName, onSend }) {
-  const t = useT();
+export default function WaComposer({ channel = 'whatsapp', conversationId, windowOpen, sms, firstName, onSend }) {
+  const { t, locale } = useI18n();
+  const ai = useAiStatus();
+  const [drafting, setDrafting] = useState(false);
   const toast = useToast();
   const [mode, setMode] = useState('reply');
   const [body, setBody] = useState('');
@@ -40,6 +45,17 @@ export default function WaComposer({ channel = 'whatsapp', windowOpen, sms, firs
     setFiles([]);
   };
   const useTemplate = (tpl) => setBody(tpl.body.replace('{first}', firstName || '').replace('{date}', 'Thursday 2:30 PM').replace('{number}', 'INV-1046').replace('{project}', 'your project'));
+  const suggest = async () => {
+    setDrafting(true);
+    try {
+      const text = await aiService.draftReply(conversationId, { locale });
+      if (text) setBody(text);
+    } catch (e) {
+      toast.show(t(`ai.liveError.${e.code || 'failed'}`), { tone: 'danger' });
+    } finally {
+      setDrafting(false);
+    }
+  };
   const pickFiles = (list) => {
     const picked = [...list];
     if (isSms) {
@@ -78,6 +94,9 @@ export default function WaComposer({ channel = 'whatsapp', windowOpen, sms, firs
             </button>
           )) : <p className="menu__item muted">{t('settings.templates.emptyTitle')}</p>)}
         </Menu>
+        {ai.live && conversationId && reply && !restricted && (
+          <IconButton icon={Sparkles} label={drafting ? t('ai.drafting') : t('ai.suggestReply')} onClick={suggest} disabled={drafting} className={cx(drafting && 'is-busy')} />
+        )}
         {(!isSms || sms?.mms) && (
           <label className={cx('icon-btn', restricted && reply && 'is-disabled')} title={isSms ? t('comms.sms.attachImage') : t('comms.attach')}>
             <Paperclip aria-hidden="true" />
@@ -94,7 +113,7 @@ export default function WaComposer({ channel = 'whatsapp', windowOpen, sms, firs
           placeholder={mode === 'note' ? t('comms.notePlaceholder') : optedOut ? t('comms.sms.optedOutShort') : restricted ? t('comms.templateOnly') : isSms ? t('comms.sms.placeholder') : t('comms.messagePlaceholder')}
           aria-label={mode === 'note' ? t('comms.internalNote') : t('comms.message')}
           aria-describedby={info ? 'sms-counter' : undefined}
-          readOnly={(restricted && !body) || (optedOut && reply)}
+          readOnly={(restricted && !body) || (optedOut && reply) || drafting}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
         />
         <IconButton icon={Send} label={mode === 'note' ? t('comms.addNote') : sms?.quietNow ? t('comms.sms.schedule') : t('comms.send')} className="composer__send" type="submit" disabled={optedOut && reply} />

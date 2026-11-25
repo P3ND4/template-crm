@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { Bot, Maximize2, X } from 'lucide-react';
 import useFocusTrap from '../../hooks/useFocusTrap.js';
+import useAiStatus from '../../hooks/useAiStatus.js';
 import { useT } from '../../i18n/index.jsx';
 import Button, { IconButton } from '../ui/Button.jsx';
 import AssistantChat from './AssistantChat.jsx';
@@ -14,6 +15,7 @@ import { useSession } from '../../app/SessionProvider.jsx';
  */
 export default function AssistantLauncher() {
   const t = useT();
+  const ai = useAiStatus();
   const { pathname } = useLocation();
   const { assistantEnabled, access } = useSession();
   const [open, setOpen] = useState(false);
@@ -38,7 +40,7 @@ export default function AssistantLauncher() {
           <div className="ai-panel" ref={panel} role="dialog" aria-modal="false" aria-label={t('ai.nav.assistant')}>
             <header className="form-header">
               <span className="ai-card__icon" style={{ width: 32, height: 32, borderRadius: 0 }} aria-hidden="true"><Bot size={16} /></span>
-              <div className="form-header__titles"><h2 className="form-title">{t('ai.nav.assistant')}</h2><p className="form-subtitle">{t('ai.assistant.panelSub')}</p></div>
+              <div className="form-header__titles"><h2 className="form-title">{t('ai.nav.assistant')}</h2><p className="form-subtitle">{ai.live ? t('ai.assistant.panelSubLive') : t('ai.assistant.panelSub')}</p></div>
               <Button size="sm" variant="ghost" plain icon={Maximize2} to="/ai/assistant" onClick={() => setOpen(false)} aria-label={t('comms.expand')} />
               <IconButton icon={X} label={t('common.close')} onClick={() => setOpen(false)} />
             </header>

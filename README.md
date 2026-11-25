@@ -39,7 +39,7 @@ Requires Node 18+ (tested with Node 22).
 | 3 | CRM — Communications (WhatsApp + Email), Agenda, Contacts, Leads, Prospecting, Pipeline | ✅ |
 | 4 | Projects | ✅ |
 | 5 | Finance — Estimates, Invoices, Expenses & POs, Payments & Reports | ✅ |
-| 6 | AI — 7 modules (demo) + floating assistant | ✅ |
+| 6 | AI — 7 modules (demo) + floating assistant; optional live model (Groq free tier) for the assistant and reply drafts — see DEPLOY.md | ✅ |
 | 7 | Settings — profile, organization & brand, users & roles, channels, templates, catalog, taxes & billing, integrations, AI, notifications | ✅ |
 | 8 | Polish, a11y pass, final screenshots | ⏳ |
 

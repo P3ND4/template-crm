@@ -1,11 +1,13 @@
 /*
- * AI service — DEMO ONLY. Every "analysis" here is a deterministic heuristic over the mock CRM data,
- * shaped like the output a real model/agent would return. Swap each function for the real endpoint
- * (e.g. a Supabase Edge Function calling an LLM) without touching the UI.
+ * AI service. The module "analyses" are deterministic heuristics over the mock CRM data, shaped like the
+ * output a real model/agent would return. The ASSISTANT and the REPLY DRAFTS use a real language model when
+ * one is connected (see llm.js — Groq free tier behind the web server) and fall back to the heuristics
+ * otherwise. Swap each function for the real endpoint (e.g. a Supabase Edge Function) without touching the UI.
  */
 import { differenceInCalendarDays, differenceInMinutes, format, getDay, getHours, startOfMonth, subMonths } from 'date-fns';
-import { delay, table, currentUserId } from './client.js';
+import { delay, table, currentUserId, settings } from './client.js';
 import * as ai from '../data/mock/ai.js';
+import { chat, llmStatus } from './llm.js';
 
 const byId = (t, id) => table(t).find((r) => r.id === id) || null;
 let seq = 3000;
@@ -270,48 +272,174 @@ export const aiService = {
     return delay(a);
   },
 
-  /* ---------- 7. Assistant (intent matching over CRM data) ---------- */
-  async ask(question) {
-    await new Promise((res) => { setTimeout(res, 500); });
-    const q = question.toLowerCase();
-    const money = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
-    if (/(overdue|vencid|unpaid|cobrar|owe)/.test(q)) {
-      const rows = table('invoices').filter((i) => ['sent', 'partial', 'overdue'].includes(i.status) && new Date(i.dueAt) < new Date()).sort((a, b) => (b.total - b.paid) - (a.total - a.paid));
-      return { key: 'overdue', vars: { n: rows.length, amount: money(rows.reduce((a, i) => a + i.total - i.paid, 0)) },
-        items: rows.slice(0, 5).map((i) => ({ label: `${i.number} · ${byId('contacts', i.clientId)?.name}`, meta: money(i.total - i.paid), to: `/finance/invoices/${i.id}` })),
-        actions: [{ key: 'openInvoices', to: '/finance/invoices?status=overdue' }] };
+  /* ---------- 7. Assistant ---------- */
+  /** Is a real model connected? → { live, model, provider } */
+  status: llmStatus,
+
+  /**
+   * Answer a question. Links and actions always come from intent matching over the CRM data (so they are
+   * real routes); the TEXT comes from the language model when it is connected, written from a compact
+   * snapshot of the CRM. history = previous [{ role, text }].
+   */
+  async ask(question, { history = [], locale = 'en' } = {}) {
+    const intent = matchIntent(question);
+    const { live } = await llmStatus();
+    if (!live) {
+      await new Promise((res) => { setTimeout(res, 500); });
+      return intent;
     }
-    if (/(today|hoy|agenda|appointment|cita|visit)/.test(q)) {
-      const start = new Date(new Date().toDateString());
-      const end = new Date(start.getTime() + 7 * 864e5);
-      const rows = table('appointments').filter((a) => new Date(a.start) >= start && new Date(a.start) < end);
-      return { key: 'agenda', vars: { n: rows.length },
-        items: rows.slice(0, 5).map((a) => ({ label: a.title, meta: format(new Date(a.start), 'EEE MMM d, h:mm a'), to: `/crm/agenda/${a.id}` })),
-        actions: [{ key: 'openAgenda', to: '/crm/agenda?view=week' }, { key: 'newAppointment', quick: 'appointment' }] };
+    const prefs = settings.ai;
+    const messages = [
+      { role: 'system', content: assistantPrompt(locale, prefs) },
+      ...history.slice(-6).map((m) => ({ role: m.role, content: m.text })),
+      { role: 'user', content: question },
+    ];
+    try {
+      const text = await chat(messages);
+      prefs.usedCredits += 1;
+      return { ...intent, text, live: true };
+    } catch (e) {
+      return { ...intent, liveError: e.code || 'failed' };
     }
-    if (/(risk|riesgo|budget|presupuesto|over)/.test(q)) {
-      const rows = table('projects').filter((p) => !['completed', 'onHold'].includes(p.status) && p.budget && p.spent / p.budget - p.progress > 0.1);
-      return { key: 'risk', vars: { n: rows.length },
-        items: rows.map((p) => ({ label: p.name, meta: `${Math.round((p.spent / p.budget) * 100)}% / ${Math.round(p.progress * 100)}%`, to: `/projects/${p.id}?tab=budget` })),
-        actions: [{ key: 'openProjects', to: '/projects?status=active' }] };
-    }
-    if (/(lead|prospect|nuevo|new client|cliente)/.test(q)) {
-      const rows = table('leads').filter((l) => l.status === 'new').sort((a, b) => b.score - a.score);
-      return { key: 'leads', vars: { n: rows.length },
-        items: rows.slice(0, 5).map((l) => ({ label: l.name, meta: `${l.neighborhood} · ${l.score}`, to: `/crm/leads/${l.id}` })),
-        actions: [{ key: 'openLeads', to: '/crm/leads?status=new&sort=score:desc' }, { key: 'runLeadFinder', to: '/ai/lead-finder' }] };
-    }
-    if (/(message|mensaje|reply|respond|whatsapp|email|correo|sms|text)/.test(q)) {
-      const rows = table('conversations').filter((c) => c.lastDirection === 'in').sort((a, b) => a.lastMessageAt.localeCompare(b.lastMessageAt));
-      return { key: 'unanswered', vars: { n: rows.length },
-        items: rows.slice(0, 5).map((c) => ({ label: byId('contacts', c.contactId)?.name, meta: c.channel, to: `/crm/communications/${c.channel}?c=${c.id}` })),
-        actions: [{ key: 'openInbox', to: '/crm/communications/whatsapp?f=unread' }] };
-    }
-    if (/(revenue|ingres|sales|venta|month|mes)/.test(q)) {
-      const start = startOfMonth(new Date());
-      const paid = table('payments').filter((p) => new Date(p.date) >= start).reduce((a, p) => a + p.amount, 0);
-      return { key: 'revenue', vars: { amount: money(paid) }, items: [], actions: [{ key: 'openReports', to: '/finance/reports?range=thisMonth' }] };
-    }
-    return { key: 'fallback', vars: {}, items: [], actions: [] };
+  },
+
+  /** Suggested reply for a WhatsApp / SMS / email thread (the user always reviews it before sending). */
+  async draftReply(conversationId, { locale = 'en' } = {}) {
+    const c = byId('conversations', conversationId);
+    if (!c) return null;
+    const contact = byId('contacts', c.contactId);
+    const project = byId('projects', c.projectId);
+    const me = byId('users', currentUserId());
+    const prefs = settings.ai;
+    const thread = table('messages').filter((m) => m.conversationId === c.id).sort((a, b) => a.sentAt.localeCompare(b.sentAt)).slice(-12)
+      .map((m) => `${m.isNote ? '[internal note] ' : ''}${m.direction === 'in' ? contact?.firstName || 'Client' : me?.name || 'Us'}: ${m.body}`).join('\n');
+    const lang = prefs.replyLanguage === 'auto' ? 'the same language the client writes in' : prefs.replyLanguage === 'es' ? 'Spanish' : 'English';
+    const limits = { sms: 'Plain text, max 300 characters, no emojis.', whatsapp: 'Short and friendly, 1–3 sentences, at most one emoji.', email: 'A short email body (greeting, 1–2 short paragraphs, sign-off with my first name). No subject line.' };
+    const messages = [
+      { role: 'system', content: [
+        `You write replies for ${me?.name || 'the team'} (${me?.title || 'designer'}) at ${settings.organization.name}, an interior design studio in Miami.`,
+        `Channel: ${c.channel}. ${limits[c.channel] || ''}`,
+        `Tone: ${prefs.tone}. Write in ${lang}.`,
+        'Reply to the client\'s latest message. Never invent prices, dates or commitments that are not in the thread or the project data; if something needs checking, say you will confirm.',
+        'Output ONLY the message text, no quotes, no explanation.',
+        contact ? `Client: ${contact.name}${contact.neighborhood ? `, ${contact.neighborhood}` : ''}.` : '',
+        project ? `Project: ${project.name} — status ${project.status}, ${Math.round(project.progress * 100)}% done, ends ${project.endDate?.slice(0, 10)}.` : '',
+      ].filter(Boolean).join('\n') },
+      { role: 'user', content: `Conversation (oldest first):\n${thread}\n\nWrite my reply.` },
+    ];
+    const text = await chat(messages, { maxTokens: 500, temperature: 0.6 });
+    prefs.usedCredits += 1;
+    return text.replace(/^["“]|["”]$/g, '');
   },
 };
+
+/* ---------- Assistant helpers ---------- */
+
+const money = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+const day = (d) => format(new Date(d), 'EEE MMM d, h:mm a');
+
+/** A compact, line-based snapshot of the CRM for the model (~1–2K tokens). Honors Settings › AI › data access. */
+function crmSnapshot() {
+  const now = new Date();
+  const access = settings.ai.dataAccess || {};
+  const name = (id) => byId('contacts', id)?.name || '—';
+  const out = [];
+  const leads = table('leads');
+  const byStatus = {};
+  leads.forEach((l) => { byStatus[l.status] = (byStatus[l.status] || 0) + 1; });
+  out.push(`LEADS by status: ${Object.entries(byStatus).map(([k, n]) => `${k} ${n}`).join(', ')}`);
+  out.push('NEW LEADS (best score first): name | neighborhood | budget | score | source | received');
+  leads.filter((l) => l.status === 'new').sort((a, b) => b.score - a.score).slice(0, 8)
+    .forEach((l) => out.push(`- ${l.name} | ${l.neighborhood} | ${money(l.budget || 0)} | ${l.score} | ${l.source} | ${l.createdAt.slice(0, 10)}`));
+
+  const start = new Date(now.toDateString());
+  const week = new Date(start.getTime() + 7 * 864e5);
+  out.push('APPOINTMENTS next 7 days: when | title | location');
+  table('appointments').filter((a) => new Date(a.start) >= start && new Date(a.start) < week).sort((a, b) => a.start.localeCompare(b.start))
+    .forEach((a) => out.push(`- ${day(a.start)} | ${a.title} | ${a.location || a.type}`));
+
+  if (access.projects !== false) {
+    out.push('ACTIVE PROJECTS: name | client | phase | progress | budget used | ends');
+    table('projects').filter((p) => !['completed'].includes(p.status))
+      .forEach((p) => out.push(`- ${p.name} | ${name(p.clientId)} | ${p.status} | ${Math.round(p.progress * 100)}% | ${money(p.spent)} of ${money(p.budget)} (${Math.round((p.spent / p.budget) * 100)}%) | ${p.endDate?.slice(0, 10)}`));
+  }
+
+  if (access.communications !== false) {
+    out.push('CONVERSATIONS WAITING FOR OUR REPLY (oldest first): contact | channel | waiting | last message');
+    table('conversations').filter((c) => c.lastDirection === 'in').sort((a, b) => a.lastMessageAt.localeCompare(b.lastMessageAt)).slice(0, 8)
+      .forEach((c) => out.push(`- ${name(c.contactId)} | ${c.channel} | ${Math.max(1, Math.round(differenceInMinutes(now, new Date(c.lastMessageAt)) / 60))} h | "${(c.lastMessage || '').slice(0, 110)}"`));
+  }
+
+  if (access.finance !== false) {
+    const open = table('invoices').filter((i) => ['sent', 'partial', 'overdue'].includes(i.status));
+    const overdue = open.filter((i) => new Date(i.dueAt) < now).sort((a, b) => (b.total - b.paid) - (a.total - a.paid));
+    out.push(`INVOICES: ${open.length} open, ${overdue.length} overdue totaling ${money(overdue.reduce((a, i) => a + i.total - i.paid, 0))}`);
+    overdue.slice(0, 6).forEach((i) => out.push(`- ${i.number} | ${name(i.clientId)} | balance ${money(i.total - i.paid)} | due ${i.dueAt.slice(0, 10)}`));
+    const monthStart = startOfMonth(now);
+    out.push(`PAYMENTS collected this month: ${money(table('payments').filter((p) => new Date(p.date) >= monthStart).reduce((a, p) => a + p.amount, 0))}`);
+    const est = table('estimates').filter((e) => ['sent', 'draft'].includes(e.status));
+    out.push(`ESTIMATES pending: ${est.length} (${money(est.reduce((a, e) => a + e.total, 0))})`);
+  } else {
+    out.push('FINANCE: not shared with the assistant (Settings › AI › Data access).');
+  }
+  return out.join('\n');
+}
+
+function assistantPrompt(locale, prefs) {
+  const me = byId('users', currentUserId());
+  const lang = prefs.replyLanguage === 'auto' ? (locale === 'es' ? 'Spanish' : 'English') : prefs.replyLanguage === 'es' ? 'Spanish' : 'English';
+  return [
+    `You are the AI assistant inside the CRM of ${settings.organization.name}, an interior design studio in Miami.`,
+    `You are talking to ${me?.name || 'a team member'} (${me?.title || ''}). Today is ${format(new Date(), 'EEEE, MMMM d, yyyy, h:mm a')}.`,
+    `Answer in ${lang}, tone ${prefs.tone}. Be brief: at most ~120 words. Use short bullet lists ("- ") when listing; no tables, no headings.`,
+    'Use ONLY the CRM data below. If the answer is not in it, say so plainly and suggest where in the CRM to look. Never invent names, amounts or dates.',
+    'You cannot change data or send messages. The app already lists the matching records as links, plus action buttons, under your answer: summarize and highlight what matters (at most 3 items), and do not write URLs.',
+    '',
+    'CRM DATA',
+    crmSnapshot(),
+  ].join('\n');
+}
+
+/** Intent matching over the CRM data → { key, vars, items, actions } (the demo answer + real links). */
+function matchIntent(question) {
+  const q = question.toLowerCase();
+  const money = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+  if (/(overdue|vencid|unpaid|cobrar|owe)/.test(q)) {
+    const rows = table('invoices').filter((i) => ['sent', 'partial', 'overdue'].includes(i.status) && new Date(i.dueAt) < new Date()).sort((a, b) => (b.total - b.paid) - (a.total - a.paid));
+    return { key: 'overdue', vars: { n: rows.length, amount: money(rows.reduce((a, i) => a + i.total - i.paid, 0)) },
+      items: rows.slice(0, 5).map((i) => ({ label: `${i.number} · ${byId('contacts', i.clientId)?.name}`, meta: money(i.total - i.paid), to: `/finance/invoices/${i.id}` })),
+      actions: [{ key: 'openInvoices', to: '/finance/invoices?status=overdue' }] };
+  }
+  if (/(today|hoy|agenda|appointment|cita|visit)/.test(q)) {
+    const start = new Date(new Date().toDateString());
+    const end = new Date(start.getTime() + 7 * 864e5);
+    const rows = table('appointments').filter((a) => new Date(a.start) >= start && new Date(a.start) < end);
+    return { key: 'agenda', vars: { n: rows.length },
+      items: rows.slice(0, 5).map((a) => ({ label: a.title, meta: format(new Date(a.start), 'EEE MMM d, h:mm a'), to: `/crm/agenda/${a.id}` })),
+      actions: [{ key: 'openAgenda', to: '/crm/agenda?view=week' }, { key: 'newAppointment', quick: 'appointment' }] };
+  }
+  if (/(risk|riesgo|budget|presupuesto|over)/.test(q)) {
+    const rows = table('projects').filter((p) => !['completed', 'onHold'].includes(p.status) && p.budget && p.spent / p.budget - p.progress > 0.1);
+    return { key: 'risk', vars: { n: rows.length },
+      items: rows.map((p) => ({ label: p.name, meta: `${Math.round((p.spent / p.budget) * 100)}% / ${Math.round(p.progress * 100)}%`, to: `/projects/${p.id}?tab=budget` })),
+      actions: [{ key: 'openProjects', to: '/projects?status=active' }] };
+  }
+  if (/(lead|prospect|nuevo|new client|cliente)/.test(q)) {
+    const rows = table('leads').filter((l) => l.status === 'new').sort((a, b) => b.score - a.score);
+    return { key: 'leads', vars: { n: rows.length },
+      items: rows.slice(0, 5).map((l) => ({ label: l.name, meta: `${l.neighborhood} · ${l.score}`, to: `/crm/leads/${l.id}` })),
+      actions: [{ key: 'openLeads', to: '/crm/leads?status=new&sort=score:desc' }, { key: 'runLeadFinder', to: '/ai/lead-finder' }] };
+  }
+  if (/(message|mensaje|reply|respond|whatsapp|email|correo|sms|text)/.test(q)) {
+    const rows = table('conversations').filter((c) => c.lastDirection === 'in').sort((a, b) => a.lastMessageAt.localeCompare(b.lastMessageAt));
+    return { key: 'unanswered', vars: { n: rows.length },
+      items: rows.slice(0, 5).map((c) => ({ label: byId('contacts', c.contactId)?.name, meta: c.channel, to: `/crm/communications/${c.channel}?c=${c.id}` })),
+      actions: [{ key: 'openInbox', to: '/crm/communications/whatsapp?f=unread' }] };
+  }
+  if (/(revenue|ingres|sales|venta|month|mes)/.test(q)) {
+    const start = startOfMonth(new Date());
+    const paid = table('payments').filter((p) => new Date(p.date) >= start).reduce((a, p) => a + p.amount, 0);
+    return { key: 'revenue', vars: { amount: money(paid) }, items: [], actions: [{ key: 'openReports', to: '/finance/reports?range=thisMonth' }] };
+  }
+  return { key: 'fallback', vars: {}, items: [], actions: [] };
+}

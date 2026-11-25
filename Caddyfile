@@ -20,8 +20,6 @@
 		format json
 	}
 
-	# Railway healthcheck (set "Healthcheck Path" = /health in the service settings)
-	respond /health 200
 
 	header {
 		X-Content-Type-Options "nosniff"
@@ -51,14 +49,63 @@
 	@sw path /sw.js
 	header @sw Service-Worker-Allowed "/"
 
-	root * {{.DIST_DIR}}
+	# Railway healthcheck (set "Healthcheck Path" = /health in the service settings)
+	handle /health {
+		respond "ok" 200
+	}
 
-	encode zstd gzip
+	# ---- Live AI (optional): Groq free tier, OpenAI-compatible --------------------------------------
+	# The browser calls /api/ai/*; Caddy adds the key from the GROQ_API_KEY variable, so it never reaches
+	# the browser. No variable → /api/ai/status says {"live":false} and the app uses its demo answers.
+	handle /api/ai/status {
+		header Content-Type application/json
+		header Cache-Control no-store
+		@aiOff expression `{env.GROQ_API_KEY} == ""`
+		respond @aiOff `{"live":false}` 200
+		respond `{"live":true,"provider":"groq"}` 200
+	}
 
-	# SPA: serve the file if it exists, otherwise index.html (client-side routes like /crm/leads/l_3).
-	try_files {path} {path}/index.html /index.html
+	handle /api/ai/chat {
+		header Cache-Control no-store
+		@aiOff expression `{env.GROQ_API_KEY} == ""`
+		respond @aiOff `{"error":"ai_not_configured"}` 503
+		# Only same-site POSTs from the app (the custom header makes other sites' browsers fail the preflight).
+		@notApp not {
+			method POST
+			header X-Requested-With template-crm
+		}
+		respond @notApp `{"error":"forbidden"}` 403
+		request_body {
+			max_size 48KB
+		}
+		rewrite * /openai/v1/chat/completions
+		reverse_proxy https://api.groq.com {
+			header_up Host {upstream_hostport}
+			header_up Authorization "Bearer {env.GROQ_API_KEY}"
+			header_up -Cookie
+			header_up -Origin
+			header_up -Referer
+			header_up -X-Requested-With
+			header_down -Access-Control-*
+			header_down -Set-Cookie
+		}
+	}
 
-	file_server {
-		hide .git .env*
+	handle /api/* {
+		respond `{"error":"not_found"}` 404
+	}
+
+	# ---- The app (static files) ------------------------------------------------------------------
+	handle {
+		root * {{.DIST_DIR}}
+
+		encode zstd gzip
+
+		# SPA: serve the file if it exists, otherwise index.html (client-side routes like /crm/leads/l_3).
+		try_files {path} {path}/index.html /index.html
+
+		file_server {
+			hide .git .env*
+		}
 	}
 }

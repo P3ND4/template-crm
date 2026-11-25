@@ -600,6 +600,9 @@ const en = {
       platformsSub: '{n} of {total} lead-finder sources connected (simulated)',
     },
     demoBadge: 'Demo data',
+    liveBadge: 'Live AI · {model} ({provider})',
+    suggestReply: 'Suggest a reply with AI', drafting: 'Writing…',
+    liveError: { rateLimit: 'The free AI quota is used up for now — showing the demo answer.', offline: 'Couldn’t reach the AI — showing the demo answer.', failed: 'The AI didn’t answer — showing the demo answer.' },
     lastRun: 'Last run {when} ago',
     neverRun: 'Never run',
     nextRun: 'Next: {when}',
@@ -693,7 +696,7 @@ const en = {
       alsoFloating: 'Also available from the floating button on every screen.',
       hello: 'How can I help today?', helloSub: 'Ask about invoices, your agenda, leads, projects or messages.',
       thinking: 'Thinking…', suggestions: 'Suggested questions', placeholder: 'Ask something… (Enter to send)',
-      open: 'Open AI assistant', panelSub: 'Demo — answers from CRM data',
+      open: 'Open AI assistant', panelSub: 'Demo — answers from CRM data', panelSubLive: 'Live model — answers from your CRM data',
       prompts: { overdue: 'Which invoices are overdue?', agenda: 'What’s on my agenda this week?', risk: 'Which projects are at budget risk?', leads: 'Show my best new leads', unanswered: 'Which messages need a reply?', revenue: 'How much have we collected this month?' },
       answers: {
         overdue: '{n} invoices are past due, totaling {amount}. Here are the largest:',

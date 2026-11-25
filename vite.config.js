@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -43,7 +43,7 @@ const pwa = VitePWA({
     globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}', 'assets/*-latin-*.woff2'],
     globIgnores: ['screenshots/**', 'splash/**'], // iOS reads launch screens itself; no need to precache them
     navigateFallback: '/index.html',
-    navigateFallbackDenylist: [/^\/health$/],
+    navigateFallbackDenylist: [/^\/health$/, /^\/api\//],
     cleanupOutdatedCaches: true,
     maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
     runtimeCaching: [
@@ -57,8 +57,38 @@ const pwa = VitePWA({
   devOptions: { enabled: false },
 });
 
+// Local dev: same /api/ai/* contract as the Caddyfile in production. Put GROQ_API_KEY in .env.local
+// (no VITE_ prefix → it never reaches the browser bundle). Without it the AI features use the demo answers.
+function aiDevProxy() {
+  let key = '';
+  const json = (res, status, body) => { res.statusCode = status; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(body)); };
+  const middleware = async (req, res, next) => {
+    if (!req.url.startsWith('/api/ai/')) return next();
+    if (req.url.startsWith('/api/ai/status')) return json(res, 200, { live: Boolean(key) });
+    if (!req.url.startsWith('/api/ai/chat') || req.method !== 'POST' || !key) return json(res, key ? 404 : 503, { error: 'ai_not_configured' });
+    const chunks = [];
+    for await (const c of req) chunks.push(c);
+    try {
+      const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` }, body: Buffer.concat(chunks),
+      });
+      res.statusCode = upstream.status;
+      res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/json');
+      res.end(Buffer.from(await upstream.arrayBuffer()));
+    } catch (e) {
+      json(res, 502, { error: String(e.message || e) });
+    }
+  };
+  return {
+    name: 'ai-dev-proxy',
+    configResolved(config) { key = loadEnv(config.mode, config.root, '').GROQ_API_KEY || ''; },
+    configureServer(server) { server.middlewares.use(middleware); },
+    configurePreviewServer(server) { server.middlewares.use(middleware); },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), pwa],
+  plugins: [react(), pwa, aiDevProxy()],
   server: { port: 5173 },
   preview: { port: 4173 },
   build: {

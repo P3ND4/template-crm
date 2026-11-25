@@ -1154,3 +1154,11 @@ body.has-savebar .ai-fab { bottom: calc(92px + var(--safe-bottom)); }
 
 /* Windows 10 focus rectangle on dark surfaces */
 .toast, .btn--primary, .btn--dark, .btn--danger { --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
+
+/* AI replies written by the live model (AiText) */
+.ai-text > * + * { margin-top: 6px; }
+.ai-text ul, .ai-text ol { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+.ai-text ul { list-style: square; }
+.ai-text strong { font-weight: 600; }
+.amsg__note { margin-top: 6px; font-size: 12px; color: var(--text-subtle); }
+.icon-btn.is-busy svg { animation: blink 1s infinite; }
