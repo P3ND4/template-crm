@@ -65,7 +65,7 @@ None are required in phase 1 (mock data only). `PORT` is injected by Railway.
 
 How it works: the browser only ever calls `/api/ai/*` on its own domain. Caddy (`Caddyfile`) answers `/api/ai/status` and forwards `POST /api/ai/chat` to Groq's OpenAI-compatible API, adding the key. The key never reaches the browser, and the CSP stays `connect-src 'self'`. Requests without the app's `X-Requested-With` header are refused, so other sites can't use the proxy from a browser, but the URL is public: if the free quota runs out (Groq free tier: about 1,000 requests or 200K tokens a day), the AI shows the demo answers until it resets. No charge is possible on a free account with no card.
 
-The model is `openai/gpt-oss-20b` (fast, free). To change it, set `VITE_AI_MODEL` (build time) to another Groq model id. Any OpenAI-compatible provider works the same way: change the `reverse_proxy` target and path in `Caddyfile`.
+The model is `openai/gpt-oss-120b`; when it hits its free rate limit the app retries once with `openai/gpt-oss-20b` (separate quota). To change them, set `VITE_AI_MODEL` / `VITE_AI_FALLBACK_MODEL` (build time) to other Groq model ids. Any OpenAI-compatible provider works the same way: change the `reverse_proxy` target and path in `Caddyfile`.
 
 Locally: put `GROQ_API_KEY=...` in `.env.local` (git-ignored, no `VITE_` prefix so it stays out of the bundle) and run `npm run dev`; `vite.config.js` serves the same `/api/ai/*` routes.
 

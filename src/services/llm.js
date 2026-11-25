@@ -5,7 +5,9 @@
  *   POST /api/ai/chat   → OpenAI-compatible chat completion (Groq free tier by default)
  * When the key is not set — or the free quota runs out — every AI feature falls back to the demo heuristics.
  */
-export const AI_MODEL = import.meta.env.VITE_AI_MODEL || 'openai/gpt-oss-20b';
+export const AI_MODEL = import.meta.env.VITE_AI_MODEL || 'openai/gpt-oss-120b';
+/** Used when the main model hits its free-tier rate limit (smaller, separate quota). */
+export const AI_FALLBACK_MODEL = import.meta.env.VITE_AI_FALLBACK_MODEL || 'openai/gpt-oss-20b';
 export const AI_PROVIDER = 'Groq';
 
 let statusPromise = null;
@@ -29,7 +31,16 @@ export class LlmError extends Error {
 }
 
 /** One chat completion. `messages` = [{ role: 'system'|'user'|'assistant', content }]. Returns the reply text. */
-export async function chat(messages, { maxTokens = 700, temperature = 0.4, signal } = {}) {
+export async function chat(messages, opts = {}) {
+  try {
+    return await complete(AI_MODEL, messages, opts);
+  } catch (e) {
+    if (e.code !== 'rateLimit' || !AI_FALLBACK_MODEL || AI_FALLBACK_MODEL === AI_MODEL) throw e;
+    return complete(AI_FALLBACK_MODEL, messages, opts);
+  }
+}
+
+async function complete(model, messages, { maxTokens = 700, temperature = 0.4, signal } = {}) {
   let res;
   try {
     res = await fetch('/api/ai/chat', {
@@ -37,7 +48,7 @@ export async function chat(messages, { maxTokens = 700, temperature = 0.4, signa
       // The custom header forces a CORS preflight, so other websites can't use this proxy from a browser.
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'template-crm' },
       body: JSON.stringify({
-        model: AI_MODEL,
+        model,
         messages,
         temperature,
         max_completion_tokens: maxTokens,
