@@ -7,6 +7,7 @@ const es = {
     demoData: 'Datos de demostración',
   },
   ribbon: {
+    more: 'Más', pageActions: 'Acciones de la página',
     label: 'Cinta de {module}',
     goto: 'Ir a',
     new: 'Nuevo',
@@ -24,6 +25,7 @@ const es = {
     up: 'Subir un nivel',
   },
   nav: {
+    more: 'Más', moreModules: 'Más módulos', sections: 'Secciones',
     main: 'Navegación principal',
     modules: 'Módulos',
     submodules: 'Secciones de {name}',

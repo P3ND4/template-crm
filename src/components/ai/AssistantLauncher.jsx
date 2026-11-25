@@ -10,8 +10,8 @@ import AssistantChat from './AssistantChat.jsx';
 import { useSession } from '../../app/SessionProvider.jsx';
 
 /**
- * AI assistant → side panel. Phones: floating button (bottom-right). Desktop: the button lives in the
- * address bar (no floating elements over the page); it opens the panel with the `assistant:open` event.
+ * AI assistant → side panel. Tablets: floating button (bottom-right). Desktop and phones: the button lives in
+ * the title bar (Topbar.jsx); it opens the panel with the `assistant:open` event.
  */
 export default function AssistantLauncher() {
   const t = useT();

@@ -8,7 +8,8 @@ import { conversationsService, lookupService } from '../../services/index.js';
 import { QuickActionsProvider } from '../quick/QuickActionsProvider.jsx';
 import CommandPalette from './CommandPalette.jsx';
 import AssistantLauncher from '../ai/AssistantLauncher.jsx';
-import Topbar, { useActiveModule } from './Topbar.jsx';
+import Topbar, { BottomBar, useActiveModule } from './Topbar.jsx';
+import useMediaQuery, { PHONE_QUERY } from '../../hooks/useMediaQuery.js';
 import cx from '../../lib/cx.js';
 import { NoAccess, ViewAsBanner } from './Access.jsx';
 import PwaStatus from './PwaStatus.jsx';
@@ -18,6 +19,7 @@ import { RibbonProvider } from './Ribbon.jsx';
 import { useSession } from '../../app/SessionProvider.jsx';
 
 const COLLAPSE_KEY = 'app.ribbonCollapsed';
+// Phones: modules move to a bottom bar (Topbar.jsx → BottomBar).
 const readCollapsed = () => { try { return localStorage.getItem(COLLAPSE_KEY) === '1'; } catch { return false; } };
 
 /**
@@ -31,6 +33,7 @@ export default function AppLayout() {
   const appRef = useRef(null);
   usePullToRefresh(appRef);
   const location = useLocation();
+  const phone = useMediaQuery(PHONE_QUERY);
 
   const toggleCollapsed = useCallback(() => setCollapsed((c) => !c), []);
   useEffect(() => { try { localStorage.setItem(COLLAPSE_KEY, collapsed ? '1' : '0'); } catch { /* ignore */ } }, [collapsed]);
@@ -52,7 +55,7 @@ export default function AppLayout() {
       <CrumbsProvider>
         <FillProvider onChange={setFill}>
           <RibbonProvider>
-            <div ref={appRef} className={cx('app', fill && 'is-fill', collapsed && 'is-ribbon-collapsed')}>
+            <div ref={appRef} className={cx('app', fill && 'is-fill', collapsed && 'is-ribbon-collapsed', phone && 'has-bottombar')}>
               {/* Pull-to-refresh indicator (touch only): sits under the header, which never moves. */}
               <div className="ptr" aria-hidden="true"><span className="ptr__spinner"><RefreshCw /></span></div>
               <a className="sr-only" href="#main">Skip to content</a>
@@ -70,6 +73,7 @@ export default function AppLayout() {
                   {blocked ? <NoAccess module={activeModule} /> : <Outlet />}
                 </main>
               </div>
+              {phone && <BottomBar counts={counts} />}
               <CommandPalette open={searchOpen} onClose={closeSearch} />
               <AssistantLauncher />
               <PwaStatus />

@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ArrowLeft, ArrowRight, ArrowUp, Bot, Building2, CalendarPlus, CheckSquare, ChevronDown, ChevronUp, Download, Eye, FileText,
-  Bell, Languages, LogOut, Mail, Receipt, Search, ShoppingCart, SlidersHorizontal, StickyNote, User, UserPlus, WifiOff,
+  Bell, Check, Languages, LogOut, Mail, MoreHorizontal, Plus, Receipt, Search, ShoppingCart, SlidersHorizontal, StickyNote, User, UserPlus, WifiOff,
 } from 'lucide-react';
 import { Link, NavLink, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { useI18n } from '../../i18n/index.jsx';
@@ -14,10 +14,12 @@ import { SETTINGS_META } from '../../services/index.js';
 import { usePwa } from '../../app/pwa.js';
 import cx from '../../lib/cx.js';
 import { useRibbonState } from './Ribbon.jsx';
+import { OverflowClone, usePriorityPlus } from './Overflow.jsx';
+import useMediaQuery, { PHONE_QUERY } from '../../hooks/useMediaQuery.js';
 
 const MODULES = [...NAV, ...NAV_FOOTER];
-const COLLAPSE_KEY = 'app.ribbonCollapsed';
-const readCollapsed = () => { try { return localStorage.getItem(COLLAPSE_KEY) === '1'; } catch { return false; } };
+/** Ribbon "units" that can move into «More ▾» (each button, link or small menu; group labels stay). */
+const RIBBON_UNITS = '.ribbon__group > :not(.ribbon__label), .ribbon__page > :not(.ribbon__group), .ribbon__slot > :not(.ribbon__group)';
 
 /** The module that owns the current URL (Dashboard only matches "/"). Quick forms belong to where they were opened. */
 export function useActiveModule() {
@@ -84,14 +86,14 @@ export default function Topbar({ onOpenSearch, unread = [], counts = {}, collaps
   useEffect(() => { setView(ribbon.contextLabel ? 'context' : 'module'); }, [ribbon.contextLabel, location.pathname]);
   const showContext = Boolean(ribbon.contextLabel) && view === 'context';
 
-  // Keep the current tab visible when the tab row scrolls sideways (phones).
-  const tabsRef = useRef(null);
-  useEffect(() => {
-    const row = tabsRef.current;
-    const el = row?.querySelector('.modtab.is-current') || row?.querySelector('.modtab.is-module');
-    if (!row || !el || row.scrollWidth <= row.clientWidth) return;
-    row.scrollLeft = el.offsetLeft - (row.clientWidth - el.offsetWidth) / 2;
-  }, [location.pathname, showContext, ribbon.contextLabel]);
+  // Rows show what fits; the rest goes to «More ▾» (Overflow.jsx). Phones use PhoneNavRow + BottomBar instead.
+  const phone = useMediaQuery(PHONE_QUERY);
+  const tabsBox = useRef(null);
+  const tabsTrack = useRef(null);
+  const ribbonBox = useRef(null);
+  const ribbonTrack = useRef(null);
+  const hiddenTabs = usePriorityPlus(tabsBox, tabsTrack, { units: '.modtab', pinned: '.is-module, .modtab--context', enabled: !phone });
+  const hiddenRibbon = usePriorityPlus(ribbonBox, ribbonTrack, { units: RIBBON_UNITS, pinned: '.active, [aria-current="page"]', compactAttr: 'data-compact', enabled: !phone && !collapsed });
 
   const onTab = (e, m) => {
     // The current module's tab doesn't navigate (like Office): it shows its ribbon (and opens it if collapsed).
@@ -118,9 +120,15 @@ export default function Topbar({ onOpenSearch, unread = [], counts = {}, collaps
         </button>
         <div className="titlebar__actions">
           {!pwa.online && <span className="offline-pill" role="status" title={t('pwa.offlineHint')}><WifiOff aria-hidden="true" /><span className="hide-mobile">{t('pwa.offline')}</span><span className="sr-only">{t('pwa.offlineHint')}</span></span>}
-          {showAssistant && (
+          {showAssistant && !phone && (
             <button type="button" className="tb-btn tb-btn--label tb-assistant" onClick={() => window.dispatchEvent(new Event('assistant:open'))}>
               <Bot aria-hidden="true" /><span>{t('ai.nav.assistant')}</span>
+            </button>
+          )}
+          {/* Phones: the assistant lives here (no floating button over the bottom bar and the composers). */}
+          {showAssistant && phone && (
+            <button type="button" className="tb-btn tb-btn--ai" onClick={() => window.dispatchEvent(new Event('assistant:open'))} aria-label={t('ai.assistant.open')} title={t('ai.assistant.open')}>
+              <Bot aria-hidden="true" />
             </button>
           )}
           <Menu
@@ -184,68 +192,87 @@ export default function Topbar({ onOpenSearch, unread = [], counts = {}, collaps
         </div>
       </div>
 
-      <div className="modtabs">
-        <nav className="modtabs__list" ref={tabsRef} aria-label={t('nav.modules')}>
-          {MODULES.map((m) => {
-            const isActive = active?.id === m.id;
-            const current = isActive && !showContext;
-            return (
-              <NavLink
-                key={m.id}
-                to={m.to}
-                end={m.end}
-                className={cx('modtab', current && 'is-current', isActive && 'is-module')}
-                aria-current={isActive ? 'page' : undefined}
-                onClick={(e) => onTab(e, m)}
-              >
-                {t(m.labelKey)}
-                {m.badge === 'unread' && counts.unread > 0 && <span className="modtab__badge">{counts.unread}</span>}
-              </NavLink>
-            );
-          })}
-          {ribbon.contextLabel && (
-            <button type="button" className={cx('modtab modtab--context', showContext && 'is-current')} aria-pressed={showContext} onClick={() => { if (collapsed) onToggleCollapse(); setView('context'); }}>
-              {ribbon.contextLabel}
+      {phone ? (
+        <PhoneNavRow active={active} newItems={newItems} />
+      ) : (
+        <>
+          <div className="modtabs" ref={tabsBox}>
+            <nav className="modtabs__track" ref={tabsTrack} aria-label={t('nav.modules')}>
+              {MODULES.map((m) => {
+                const isActive = active?.id === m.id;
+                const current = isActive && !showContext;
+                return (
+                  <NavLink
+                    key={m.id}
+                    to={m.to}
+                    end={m.end}
+                    className={cx('modtab', current && 'is-current', isActive && 'is-module')}
+                    aria-current={isActive ? 'page' : undefined}
+                    onClick={(e) => onTab(e, m)}
+                  >
+                    {t(m.labelKey)}
+                    {m.badge === 'unread' && counts.unread > 0 && <span className="modtab__badge">{counts.unread}</span>}
+                  </NavLink>
+                );
+              })}
+              {ribbon.contextLabel && (
+                <button type="button" className={cx('modtab modtab--context', showContext && 'is-current')} aria-pressed={showContext} onClick={() => { if (collapsed) onToggleCollapse(); setView('context'); }}>
+                  {ribbon.contextLabel}
+                </button>
+              )}
+            </nav>
+            <Menu
+              className="modtabs__more"
+              label={t('nav.moreModules')}
+              trigger={(p) => <button type="button" className="modtab modtab--more" {...p}>{t('nav.more')}<ChevronDown aria-hidden="true" /></button>}
+            >
+              {(close) => MODULES.filter((m, i) => hiddenTabs.includes(i)).map((m) => {
+                const Icon = m.icon;
+                return (
+                  <NavLink key={m.id} role="menuitem" className="menu__item" to={m.to} end={m.end} onClick={close}>
+                    <Icon aria-hidden="true" />{t(m.labelKey)}
+                    {m.badge === 'unread' && counts.unread > 0 && <span className="modtab__badge" style={{ marginLeft: 'auto' }}>{counts.unread}</span>}
+                  </NavLink>
+                );
+              })}
+            </Menu>
+            <button type="button" className="modtabs__pin" onClick={onToggleCollapse} aria-expanded={!collapsed} aria-label={collapsed ? t('ribbon.expand') : t('ribbon.collapse')} title={`${collapsed ? t('ribbon.expand') : t('ribbon.collapse')} (Ctrl/⌘ + B)`}>
+              {collapsed ? <ChevronDown aria-hidden="true" /> : <ChevronUp aria-hidden="true" />}
             </button>
-          )}
-        </nav>
-        <button type="button" className="modtabs__pin" onClick={onToggleCollapse} aria-expanded={!collapsed} aria-label={collapsed ? t('ribbon.expand') : t('ribbon.collapse')} title={`${collapsed ? t('ribbon.expand') : t('ribbon.collapse')} (Ctrl/⌘ + B)`}>
-          {collapsed ? <ChevronDown aria-hidden="true" /> : <ChevronUp aria-hidden="true" />}
-        </button>
-      </div>
+          </div>
 
-      {!collapsed && (
-        <div className="ribbon" role="toolbar" aria-label={showContext ? ribbon.contextLabel : t('ribbon.label', { module: active ? t(active.labelKey) : '' })}>
-          {showContext ? (
-            <div className="ribbon__slot" ref={ribbon.setContextSlot} />
-          ) : (
-            <>
-              {active?.children && (
-                <div className="ribbon__group" role="group" aria-label={t('ribbon.goto')}>
-                  {active.children.map((c) => {
-                    const Icon = c.icon;
-                    return (
-                      <NavLink key={c.id} to={c.to} end={c.end} className="rbtn">
-                        <Icon aria-hidden="true" />{t(c.labelKey)}
-                        {c.badge === 'unread' && counts.unread > 0 && <span className="rbtn__badge">{counts.unread}</span>}
-                      </NavLink>
-                    );
-                  })}
-                </div>
-              )}
-              {newItems.length > 0 && (
-                <div className="ribbon__group" role="group" aria-label={t('ribbon.new')}>
-                  <span className="ribbon__label" aria-hidden="true">{t('ribbon.new')}</span>
-                  {newItems.map((it) => {
+          {!collapsed && (
+            <div className="ribbon" ref={ribbonBox} role="toolbar" aria-label={showContext ? ribbon.contextLabel : t('ribbon.label', { module: active ? t(active.labelKey) : '' })}>
+              <div className="ribbon__track" ref={ribbonTrack}>
+                <RibbonContent showContext={showContext} active={active} newItems={newItems} counts={counts} t={t} slots={{ context: ribbon.setContextSlot, page: ribbon.setPageSlot }} />
+              </div>
+              <Menu
+                className="ribbon__more"
+                label={t('ribbon.more')}
+                panelClassName="ribbon-menu"
+                trigger={(p) => <button type="button" className="rbtn" {...p}>{t('ribbon.more')}<ChevronDown aria-hidden="true" /></button>}
+              >
+                {(close) => (
+                  <OverflowClone hidden={hiddenRibbon} units={RIBBON_UNITS} onPick={close}>
+                    <RibbonContent showContext={showContext} active={active} newItems={newItems} counts={counts} t={t} slots={{ context: ribbon.setContextCloneSlot, page: ribbon.setPageCloneSlot }} />
+                  </OverflowClone>
+                )}
+              </Menu>
+              {!showContext && newItems.length > 0 && (
+                <Menu
+                  className="ribbon__new"
+                  label={t('ribbon.new')}
+                  trigger={(p) => <button type="button" className="rbtn rbtn--primary" {...p}><Plus aria-hidden="true" />{t('ribbon.new')}<ChevronDown aria-hidden="true" /></button>}
+                >
+                  {(close) => newItems.map((it) => {
                     const Icon = it.icon;
-                    return <button key={it.id} type="button" className="rbtn" onClick={it.onClick}><Icon aria-hidden="true" />{it.label}</button>;
+                    return <button key={it.id} role="menuitem" type="button" className="menu__item" onClick={() => { close(); it.onClick(); }}><Icon aria-hidden="true" />{it.label}</button>;
                   })}
-                </div>
+                </Menu>
               )}
-              <div className="ribbon__page" ref={ribbon.setPageSlot} />
-            </>
+            </div>
           )}
-        </div>
+        </>
       )}
       <MeasureHeight />
     </header>
@@ -266,4 +293,176 @@ function MeasureHeight() {
     return () => ro?.disconnect();
   }, []);
   return <span ref={ref} hidden />;
+}
+
+/** The ribbon's content: module view (Go to · New · page controls) or the record's contextual actions. Rendered
+ * twice on wide screens — in the ribbon and inside «More ▾» — with different portal slots. */
+function RibbonContent({ showContext, active, newItems, counts, t, slots }) {
+  if (showContext) return <div className="ribbon__slot" ref={slots.context} />;
+  return (
+    <>
+      {active?.children && (
+        <div className="ribbon__group" role="group" aria-label={t('ribbon.goto')}>
+          {active.children.map((c) => {
+            const Icon = c.icon;
+            return (
+              <NavLink key={c.id} to={c.to} end={c.end} className="rbtn">
+                <Icon aria-hidden="true" />{t(c.labelKey)}
+                {c.badge === 'unread' && counts.unread > 0 && <span className="rbtn__badge">{counts.unread}</span>}
+              </NavLink>
+            );
+          })}
+        </div>
+      )}
+      {newItems.length > 0 && (
+        <div className="ribbon__group ribbon__group--new" role="group" aria-label={t('ribbon.new')}>
+          <span className="ribbon__label" aria-hidden="true">{t('ribbon.new')}</span>
+          {newItems.map((it) => {
+            const Icon = it.icon;
+            return <button key={it.id} type="button" className="rbtn" onClick={it.onClick}><Icon aria-hidden="true" />{it.label}</button>;
+          })}
+        </div>
+      )}
+      <div className="ribbon__page" ref={slots.page} />
+    </>
+  );
+}
+
+/** Section of the current module that owns the URL (Leads, Agenda…). */
+function useActiveSection(active) {
+  const { pathname, state } = useLocation();
+  const path = (pathname.startsWith('/new/') || pathname.startsWith('/edit/')) && state?.from ? state.from.split('?')[0] : pathname;
+  return (active?.children || []).find((c) => (c.end ? path === c.to : path === c.to || path.startsWith(`${c.to}/`))) || null;
+}
+
+/**
+ * Phones: one row under the title bar — section ▾ (sections of the current module) · + (New) · ⋯ (the page's
+ * controls or the record's actions). Modules live in the bottom bar (BottomBar).
+ */
+function PhoneNavRow({ active, newItems }) {
+  const { t } = useI18n();
+  const ribbon = useRibbonState();
+  const section = useActiveSection(active);
+  const children = active?.children || [];
+  const title = section ? t(section.labelKey) : active ? t(active.labelKey) : t('nav.dashboard');
+  const TitleIcon = section?.icon || active?.icon;
+  const actionsLabel = ribbon.contextLabel || t('ribbon.pageActions');
+  const hasActions = Boolean(ribbon.contextLabel) || ribbon.pageControls > 0;
+  return (
+    <nav className="phonenav" aria-label={t('nav.sections')}>
+      {children.length > 0 ? (
+        <Menu
+          align="left"
+          className="phonenav__section"
+          label={t('nav.submodules', { name: t(active.labelKey) })}
+          trigger={(p) => (
+            <button type="button" className="phonenav__title" {...p}>
+              {TitleIcon && <TitleIcon aria-hidden="true" />}<span className="truncate">{title}</span><ChevronDown className="phonenav__chev" aria-hidden="true" />
+            </button>
+          )}
+        >
+          {(close) => (
+            <>
+              <div className="menu__label">{t(active.labelKey)}</div>
+              {children.map((c) => {
+                const Icon = c.icon;
+                const current = c.id === section?.id;
+                return (
+                  <NavLink key={c.id} role="menuitem" to={c.to} end={c.end} onClick={close} className={cx('menu__item', current && 'is-current')} aria-current={current ? 'page' : undefined}>
+                    <Icon aria-hidden="true" />{t(c.labelKey)}
+                    {current && <Check className="menu__check" aria-hidden="true" />}
+                  </NavLink>
+                );
+              })}
+            </>
+          )}
+        </Menu>
+      ) : (
+        <span className="phonenav__title phonenav__title--static">{TitleIcon && <TitleIcon aria-hidden="true" />}<span className="truncate">{title}</span></span>
+      )}
+      <span className="grow" />
+      {newItems.length > 0 && (
+        <Menu
+          label={t('ribbon.new')}
+          trigger={(p) => <button type="button" className="phonenav__btn phonenav__btn--primary" aria-label={t('ribbon.new')} title={t('ribbon.new')} {...p}><Plus aria-hidden="true" /></button>}
+        >
+          {(close) => (
+            <>
+              <div className="menu__label">{t('ribbon.new')}</div>
+              {newItems.map((it) => {
+                const Icon = it.icon;
+                return <button key={it.id} role="menuitem" type="button" className="menu__item" onClick={() => { close(); it.onClick(); }}><Icon aria-hidden="true" />{it.label}</button>;
+              })}
+            </>
+          )}
+        </Menu>
+      )}
+      {hasActions && (
+        <Menu
+          label={actionsLabel}
+          panelClassName="ribbon-menu"
+          trigger={(p) => <button type="button" className="phonenav__btn" aria-label={actionsLabel} title={actionsLabel} {...p}><MoreHorizontal aria-hidden="true" /></button>}
+        >
+          {(close) => (
+            <OverflowClone hidden={null} units={RIBBON_UNITS} onPick={close}>
+              <div className="menu__label">{actionsLabel}</div>
+              {ribbon.contextLabel
+                ? <div className="ribbon__slot" ref={ribbon.setContextCloneSlot} />
+                : <div className="ribbon__page" ref={ribbon.setPageCloneSlot} />}
+            </OverflowClone>
+          )}
+        </Menu>
+      )}
+    </nav>
+  );
+}
+
+const BOTTOM_MAIN = ['dashboard', 'crm', 'projects', 'finance'];
+
+/** Phones: modules in a bar at the bottom; the rest (AI, Settings) under «More». */
+export function BottomBar({ counts = {} }) {
+  const { t } = useI18n();
+  const active = useActiveModule();
+  const main = MODULES.filter((m) => BOTTOM_MAIN.includes(m.id));
+  const more = MODULES.filter((m) => !BOTTOM_MAIN.includes(m.id));
+  const moreActive = more.some((m) => m.id === active?.id);
+  return (
+    <nav className="bottombar" aria-label={t('nav.modules')}>
+      {main.map((m) => {
+        const Icon = m.icon;
+        const current = active?.id === m.id;
+        return (
+          <NavLink key={m.id} to={m.to} end={m.end} className={cx('bottombar__item', current && 'is-current')} aria-current={current ? 'page' : undefined}>
+            <span className="bottombar__icon">
+              <Icon aria-hidden="true" />
+              {m.id === 'crm' && counts.unread > 0 && <span className="bottombar__badge">{counts.unread > 99 ? '99+' : counts.unread}</span>}
+            </span>
+            <span className="bottombar__label">{t(m.labelKey)}</span>
+          </NavLink>
+        );
+      })}
+      <Menu
+        up
+        className="bottombar__more"
+        label={t('nav.moreModules')}
+        trigger={(p) => (
+          <button type="button" className={cx('bottombar__item', moreActive && 'is-current')} {...p}>
+            <span className="bottombar__icon"><MoreHorizontal aria-hidden="true" /></span>
+            <span className="bottombar__label">{t('nav.more')}</span>
+          </button>
+        )}
+      >
+        {(close) => more.map((m) => {
+          const Icon = m.icon;
+          const current = active?.id === m.id;
+          return (
+            <NavLink key={m.id} role="menuitem" to={m.to} end={m.end} onClick={close} className={cx('menu__item', current && 'is-current')} aria-current={current ? 'page' : undefined}>
+              <Icon aria-hidden="true" />{t(m.labelKey)}
+              {current && <Check className="menu__check" aria-hidden="true" />}
+            </NavLink>
+          );
+        })}
+      </Menu>
+    </nav>
+  );
 }

@@ -61,9 +61,13 @@
 }
 
 /* Module tabs (+ contextual tab of the record on screen) */
+/* Rows never scroll sideways: what doesn't fit goes into «More ▾» (components/layout/Overflow.jsx). */
 .modtabs { display: flex; align-items: stretch; min-width: 0; padding: 0 var(--sp-2) 0 var(--sp-1); }
-.modtabs__list { display: flex; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
-.modtabs__list::-webkit-scrollbar { display: none; }
+.modtabs__track { display: flex; flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.modtabs__more { display: none; }
+.modtabs[data-more] .modtabs__more { display: flex; }
+.modtab--more svg { width: 14px; height: 14px; }
+.modtabs [data-ofl], .ribbon [data-ofl] { display: none !important; }
 .modtab {
   flex: none; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px;
   border: 0; background: transparent; color: var(--brand-muted); font: inherit; font-size: var(--fs-14); font-weight: var(--fw-medium);
@@ -84,16 +88,21 @@
 .app.is-ribbon-collapsed .modtab.is-current { background: transparent; color: var(--brand-contrast); box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--accent) 60%, #fff); }
 .app.is-ribbon-collapsed .modtab--context.is-current { background: color-mix(in srgb, var(--accent) 40%, var(--brand)); }
 
-/* Ribbon (simplified: one line, scrolls sideways when it doesn't fit) */
+/* Ribbon (simplified: one line). Too narrow → «New» folds into «+ New ▾», then the rest goes to «More ▾». */
 .ribbon {
-  display: flex; align-items: center; min-height: 44px; padding: 0 var(--sp-3); gap: 0;
+  display: flex; align-items: center; min-height: 44px; padding: 0 var(--sp-3); gap: 4px;
   background: var(--surface); color: var(--text); border-bottom: 1px solid var(--border);
-  overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin;
 }
+.ribbon__track { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.ribbon__more, .ribbon__new { display: none; flex: none; }
+.ribbon[data-more] .ribbon__more, .ribbon[data-compact] .ribbon__new { display: block; }
+.ribbon[data-compact] .ribbon__group--new { display: none; }
+.ribbon__more > .rbtn svg, .ribbon__new > .rbtn svg:last-child { width: 14px; height: 14px; }
+.ribbon__group:not(:has(> :not([data-ofl], [hidden], .ribbon__label))) { display: none; }
 .ribbon__slot, .ribbon__page { display: flex; align-items: center; gap: 2px; flex: none; }
 .ribbon__page:not(:empty) { padding-left: var(--sp-2); }
 .ribbon__group { display: flex; align-items: center; gap: 2px; flex: none; padding: 0 var(--sp-2); border-right: 1px solid var(--border); min-height: 30px; }
-.ribbon > .ribbon__group:first-child, .ribbon__slot > .ribbon__group:first-child { padding-left: 0; }
+.ribbon__track > .ribbon__group:first-child, .ribbon__slot > .ribbon__group:first-child { padding-left: 0; }
 .ribbon__page > .ribbon__group:last-child, .ribbon__slot > .ribbon__group:last-child { border-right: 0; }
 .ribbon__label { margin-right: 4px; font-size: 11px; font-weight: var(--fw-semibold); letter-spacing: .08em; text-transform: uppercase; color: var(--text-subtle); white-space: nowrap; }
 .rbtn {
@@ -106,13 +115,16 @@
 .rbtn.active, .rbtn[aria-pressed='true'] { background: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent); }
 .rbtn.active svg, .rbtn[aria-pressed='true'] svg { color: var(--accent); }
 .rbtn__badge { padding: 0 5px; background: var(--accent); color: var(--accent-contrast); font-size: 11px; font-weight: var(--fw-bold); line-height: 18px; }
+.rbtn.rbtn--primary, .rbtn.rbtn--primary[aria-expanded='true'] { background: var(--accent); color: var(--accent-contrast); box-shadow: none; }
+.rbtn.rbtn--primary:hover { background: var(--accent-hover); color: var(--accent-contrast); }
+.rbtn.rbtn--primary svg { color: inherit; }
 /* Page buttons moved into the ribbon (contextual tab, page controls) look like ribbon buttons. */
-.ribbon .btn {
+.ribbon .btn, .ribbon-menu .btn {
   --btn-bg: transparent; --btn-border: transparent; --btn-hover: var(--surface-2); --btn-ring: var(--border-strong);
   min-height: 34px; height: 34px; padding: 0 10px; flex: none;
   text-transform: none; letter-spacing: 0; font-weight: var(--fw-medium); font-size: var(--fs-13);
 }
-.ribbon .btn svg { color: var(--text-muted); }
+.ribbon .btn svg, .ribbon-menu .btn svg { color: var(--text-muted); }
 .ribbon .btn--primary { --btn-bg: var(--accent); --btn-fg: var(--accent-contrast); --btn-hover: var(--accent-hover); --btn-ring: rgba(0, 0, 0, .28); margin: 0 4px; }
 .ribbon .btn--primary svg { color: inherit; }
 .ribbon .btn[aria-pressed='true'] { --btn-bg: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent); }
@@ -410,3 +422,75 @@
 /* The address bar already shows where you are: the small module label above page titles goes away on desktop. */
 .page-head__eyebrow { display: none; }
 .inline-panel .doc-preview { max-height: 360px; }
+
+/* ---------- «More ▾» / «⋯» menus: copies of ribbon items, one per line ---------- */
+.ribbon-menu { min-width: 240px; max-height: min(70vh, 520px); overflow-y: auto; }
+.ribbon-menu [hidden] { display: none !important; }
+.ribbon-menu :is(.ribbon__slot, .ribbon__page, .ribbon__group) { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0; border: 0; min-height: 0; }
+.ribbon-menu .ribbon__group + .ribbon__group:not([hidden]) { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border); }
+.ribbon-menu .ribbon__label { margin: 0; padding: 8px 10px 4px; }
+.ribbon-menu :is(.rbtn, .btn) { width: 100%; height: auto; min-height: 40px; justify-content: flex-start; padding: 0 10px; margin: 0; }
+.ribbon-menu .rbtn__badge { margin-left: auto; }
+.ribbon-menu .btn--primary { --btn-bg: transparent; --btn-fg: var(--accent-strong); --btn-hover: var(--surface-2); --btn-ring: var(--border-strong); }
+.menu__panel--up { top: auto; bottom: calc(100% + 6px); }
+.menu__item.is-current { background: var(--accent-soft); font-weight: var(--fw-semibold); }
+.menu__item.is-current svg { color: var(--accent); }
+.menu__item .menu__check { margin-left: auto; color: var(--accent); }
+
+/* ---------- Phones (< 600px): one navigation row on top + modules in a bottom bar ----------
+   Keep the width in sync with PHONE_QUERY (hooks/useMediaQuery.js). */
+.phonenav {
+  display: flex; align-items: center; gap: 2px; height: 52px; padding: 0 max(6px, var(--safe-right)) 0 max(6px, var(--safe-left));
+  background: var(--surface); color: var(--text); border-bottom: 1px solid var(--border);
+}
+.phonenav .menu { display: flex; }
+.phonenav__section { min-width: 0; }
+.phonenav__title {
+  min-width: 0; height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 10px;
+  border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text);
+  font: inherit; font-size: var(--fs-16); font-weight: var(--fw-semibold); cursor: pointer;
+}
+button.phonenav__title:hover, button.phonenav__title[aria-expanded='true'] { background: var(--surface-2); }
+.phonenav__title svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+.phonenav__title .phonenav__chev { width: 16px; height: 16px; color: var(--text-muted); }
+.phonenav__title--static { cursor: default; }
+.phonenav__btn { width: 44px; height: 44px; display: grid; place-items: center; flex: none; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text); cursor: pointer; }
+.phonenav__btn:hover, .phonenav__btn[aria-expanded='true'] { background: var(--surface-2); }
+.phonenav__btn svg { width: 20px; height: 20px; }
+.phonenav__btn--primary, .phonenav__btn--primary:hover, .phonenav__btn--primary[aria-expanded='true'] { background: var(--accent); color: var(--accent-contrast); }
+.phonenav .menu__panel { max-width: calc(100vw - 16px); }
+
+.bottombar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-topbar);
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+  height: var(--bottombar-h); padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left); box-sizing: border-box;
+  background: var(--brand); color: var(--brand-muted); border-top: 1px solid var(--brand-3);
+  --focus-ring: 0 0 0 2px var(--brand-contrast);
+}
+.bottombar__more { display: flex; }
+.bottombar__more > .bottombar__item { flex: 1; }
+.bottombar__more .menu__panel { right: 6px; }
+.bottombar__item {
+  min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  border: 0; background: transparent; color: var(--brand-muted); font: inherit; font-size: 11px; font-weight: var(--fw-medium);
+  text-decoration: none; cursor: pointer;
+}
+.bottombar__item:hover { color: var(--brand-contrast); text-decoration: none; }
+.bottombar__item.is-current { color: var(--brand-contrast); font-weight: var(--fw-semibold); box-shadow: inset 0 2px 0 color-mix(in srgb, var(--accent) 60%, #fff); }
+.bottombar__item[aria-expanded='true'] { background: var(--brand-2); color: var(--brand-contrast); }
+.bottombar__icon { position: relative; display: grid; place-items: center; }
+.bottombar__icon svg { width: 21px; height: 21px; }
+.bottombar__label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
+.bottombar__badge { position: absolute; top: -6px; left: 13px; min-width: 16px; padding: 0 4px; box-sizing: border-box; background: var(--accent); color: var(--accent-contrast); font-size: 10px; font-weight: var(--fw-bold); line-height: 16px; text-align: center; }
+
+/* Room for the bottom bar: everything anchored to the bottom uses --bottom-inset (safe area elsewhere). */
+:root { --bottombar-h: 0px; --bottom-inset: var(--safe-bottom, 0px); }
+@media (max-width: 599px) {
+  :root:has(.app.has-bottombar) { --bottombar-h: calc(58px + var(--safe-bottom, 0px)); --bottom-inset: var(--bottombar-h); }
+  .app.has-bottombar .content { padding-bottom: calc(96px + var(--bottom-inset)); }
+  .app.has-bottombar .form-shell--page .form-footer { bottom: var(--bottombar-h); }
+}
+.ribbon-menu .ribbon__group:not(:has(> :not([hidden], .ribbon__label))) { display: none; }
+/* Phones: the assistant opens from the title bar, so no floating button. */
+.app.has-bottombar .ai-fab { display: none; }
+.tb-btn--ai svg { color: color-mix(in srgb, var(--accent) 50%, #fff); }

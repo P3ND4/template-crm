@@ -112,7 +112,7 @@ pages/ (pantallas)  ──usa──►  components/ (UI reutilizable)
 4. **Un solo patrón de formulario** (`FormShell`) para modales y páginas.
 5. **Cero texto hardcodeado**: todo pasa por `t('clave')`, con las mismas claves en `en.js` y `es.js`.
 6. **Cero colores sueltos**: todo sale de variables de `tokens.css`. Cambiar la marca = editar un archivo.
-7. **Nunca scroll horizontal de la página**: tablas y filas de pestañas scrollean dentro de su caja. Lo verifica `npm run qa:audit`.
+7. **Nunca scroll horizontal de la página**: las tablas scrollean dentro de su caja; las filas de navegación no scrollean nunca (lo que no cabe va a «Más»). Lo verifica `npm run qa:audit`.
 8. **Accesible por defecto**: foco visible, labels reales, `aria-*` en los componentes base, teclado en todo (menús, tabs, kanban, modales).
 9. **Navegación desde un solo config** (`navigation.js`): pestañas, cinta, paleta, ruta y permisos leen de ahí.
 10. **Sin sidebar**: navegación superior tipo Office (ver §6).
@@ -243,11 +243,15 @@ export const NAV_FOOTER = [ { id: 'settings', …, children: [...] } ];  // últ
 
 ### Comportamiento
 
-| | Escritorio | Teléfono / tablet (<1024) |
+| | Escritorio y tablet (≥ 600 px) | Teléfono (< 600 px) |
 |---|---|---|
-| Barra de título | Atrás · Adelante · Subir · marca · búsqueda ancha · Asistente · campana · usuario | Atrás · marca · icono de búsqueda · campana · usuario |
-| Pestañas | todas visibles + contextual + botón para ocultar la cinta | fila deslizable; la pestaña actual se centra sola |
-| Cinta | una línea; si no cabe, se desliza de lado | igual |
+| Barra de título | Atrás · Adelante · Subir · marca · búsqueda · Asistente (≥1024) · campana · usuario | Atrás · marca · icono de búsqueda · campana · usuario |
+| Módulos | pestañas; las que no caben van a **«Más ▾»** (la actual y la contextual nunca) | **barra inferior**: Dashboard · CRM · Proyectos · Finanzas · Más (IA, Ajustes) |
+| Secciones y acciones | cinta de una línea: si no cabe, *Nuevo* se pliega en **«+ Nuevo ▾»** y lo demás pasa a **«Más ▾»** desde la derecha | una fila: **sección ▾** · **+** (Nuevo) · **⋯** (controles de la página o acciones del registro) |
+
+- **Nunca hay scroll lateral en estas filas.** `usePriorityPlus()` (`components/layout/Overflow.jsx`) mide la fila (`overflow: hidden`) y marca con `data-ofl` lo que no cabe; `OverflowClone` pinta la misma cinta dentro del menú «Más» y muestra solo eso. Por eso `<RibbonPage>` y `<RibbonContext>` renderizan sus hijos **dos veces** (cinta y menú): mantenlos sin estado propio (props + handlers de la página).
+- El ancho del teléfono está en `PHONE_QUERY` (`hooks/useMediaQuery.js`) y en `layout.css` (`max-width: 599px`): cámbialos juntos.
+- Lo anclado abajo (toasts, botón del asistente, barra de guardar, pie de formularios en página) usa `--bottom-inset` / `--bottombar-h` para quedar encima de la barra inferior.
 
 - **Ocultar / mostrar la cinta**: chevron al final de las pestañas o **Ctrl/⌘ + B**. Se guarda en `localStorage: app.ribbonCollapsed`. Con la cinta oculta, un clic en la pestaña actual la vuelve a mostrar.
 - `--topbar-h` se **mide** (ResizeObserver en `Topbar.jsx`) y se escribe en `.app`. Todo lo sticky (cabeceras de tabla, formularios en página) y las páginas *fill* lo usan.

@@ -5,8 +5,9 @@ import cx from '../../lib/cx.js';
  * Dropdown menu with keyboard support (↑↓, Home/End, Esc, click-outside).
  * trigger: (props) => <button {...props}>…</button>
  * children: (close) => menu items (use .menu__item buttons/links with role="menuitem")
+ * up: open above the trigger (bottom bar).
  */
-export default function Menu({ trigger, children, align = 'right', label }) {
+export default function Menu({ trigger, children, align = 'right', label, up = false, className, panelClassName }) {
   const [open, setOpen] = useState(false);
   const root = useRef(null);
   const panel = useRef(null);
@@ -33,10 +34,10 @@ export default function Menu({ trigger, children, align = 'right', label }) {
   };
 
   return (
-    <div className="menu" ref={root} onKeyDown={open ? onKeyDown : undefined}>
+    <div className={cx('menu', className)} ref={root} onKeyDown={open ? onKeyDown : undefined}>
       {trigger({ 'aria-haspopup': 'menu', 'aria-expanded': open, 'aria-controls': id, onClick: () => setOpen((o) => !o) })}
       {open && (
-        <div id={id} ref={panel} role="menu" aria-label={label} className={cx('menu__panel', align === 'left' && 'menu__panel--left')}>
+        <div id={id} ref={panel} role="menu" aria-label={label} className={cx('menu__panel', align === 'left' && 'menu__panel--left', up && 'menu__panel--up', panelClassName)}>
           {children(() => setOpen(false))}
         </div>
       )}

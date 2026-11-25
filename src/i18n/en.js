@@ -8,6 +8,7 @@ const en = {
     demoData: 'Demo data',
   },
   ribbon: {
+    more: 'More', pageActions: 'Page actions',
     label: '{module} ribbon',
     goto: 'Go to',
     new: 'New',
@@ -25,6 +26,7 @@ const en = {
     up: 'Up one level',
   },
   nav: {
+    more: 'More', moreModules: 'More modules', sections: 'Sections',
     main: 'Main navigation',
     modules: 'Modules',
     submodules: '{name} sections',
