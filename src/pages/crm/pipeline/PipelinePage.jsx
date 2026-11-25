@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { CalendarClock, Clock, HandCoins, Percent, Scale, Trophy } from 'lucide-react';
 import { SearchInput, FilterSelect } from '../../../components/list/ListToolbar.jsx';
 import { Avatar, Card, DataState, Kpi, Skeleton, useToast } from '../../../components/ui/index.js';
-import Kanban from '../../../components/ui/Kanban.jsx';
+import Kanban, { KanbanMove } from '../../../components/ui/Kanban.jsx';
+import useMediaQuery, { PHONE_QUERY } from '../../../hooks/useMediaQuery.js';
 import useResource from '../../../hooks/useResource.js';
 import useUrlState from '../../../hooks/useUrlState.js';
 import { useT } from '../../../i18n/index.jsx';
@@ -12,7 +13,16 @@ import { crmService, lookupService } from '../../../services/index.js';
 
 export const STAGES = ['new', 'contacted', 'consultation', 'proposal', 'negotiation', 'won', 'lost'];
 
-function DealCard({ deal, t }) {
+function DealCard({ deal, t, stages, onMove, mini }) {
+  // While dragging on a phone the card shrinks to a small chip, so the stage tabs stay visible.
+  if (mini) {
+    return (
+      <article className="deal deal--mini">
+        <span className="deal__title truncate">{deal.title}</span>
+        <span className="deal__value">{moneyCompact(deal.value)}</span>
+      </article>
+    );
+  }
   const late = deal.nextActionAt && new Date(deal.nextActionAt) < new Date(new Date().toDateString());
   return (
     <article className="deal">
@@ -32,6 +42,7 @@ function DealCard({ deal, t }) {
       )}
       <div className="deal__foot">
         <span className="row" style={{ gap: 4 }}><Clock size={12} aria-hidden="true" />{t('pipeline.daysInStage', { n: deal.daysInStage })}</span>
+        {stages && <KanbanMove value={deal.stage} columns={stages} label={t('pipeline.moveShort')} onChange={(stage) => onMove(deal.id, stage)} />}
         <Link className="deal__open" to={`/crm/pipeline/${deal.id}`} onPointerDown={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>{t('common.view')}</Link>
       </div>
     </article>
@@ -43,6 +54,9 @@ export default function PipelinePage() {
   const toast = useToast();
   const [owner, setOwner] = useUrlState('owner', '');
   const [q, setQ] = useUrlState('q', '');
+  // Phones: one stage at a time (tabs), no sideways scrolling. Tablets / desktop: the full board.
+  const phone = useMediaQuery(PHONE_QUERY);
+  const [stage, setStage] = useUrlState('stage', 'new');
   const { data, loading, error, refetch } = useResource(() => crmService.pipeline({ ownerId: owner || undefined }), [owner]);
   const [deals, setDeals] = useState([]);
   useEffect(() => { if (data) setDeals(data); }, [data]);
@@ -61,6 +75,7 @@ export default function PipelinePage() {
       meta: rows.length ? moneyCompact(sum(rows, (d) => d.value)) : t('common.none'),
       tone: s === 'won' ? 'success' : s === 'lost' ? 'muted' : undefined,
       emptyLabel: t('pipeline.dropHere'),
+      compactEmptyLabel: t('pipeline.emptyStage'),
     };
   });
 
@@ -95,7 +110,18 @@ export default function PipelinePage() {
           {loading && !data ? (
             <div className="kanban">{STAGES.map((s) => <Skeleton key={s} height={360} />)}</div>
           ) : (
-            <Kanban label={t('nav.pipeline')} columns={columns} items={visible} onMove={move} renderCard={(d) => <DealCard deal={d} t={t} />} />
+            <Kanban
+              label={t('nav.pipeline')}
+              columns={columns}
+              items={visible}
+              onMove={move}
+              compact={phone}
+              activeColumn={stage}
+              onActiveColumn={setStage}
+              tabsLabel={t('pipeline.stages')}
+              hint={phone ? t('pipeline.compactHint') : undefined}
+              renderCard={(d, { overlay, compact }) => <DealCard deal={d} t={t} stages={overlay ? null : columns} onMove={move} mini={overlay && compact} />}
+            />
           )}
         </>
       )}

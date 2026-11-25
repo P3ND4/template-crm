@@ -49,6 +49,11 @@ Everything lives in `src/styles/tokens.css` (and the accent presets in `src/app/
 - The ribbon collapsed state is kept in `localStorage` (`app.ribbonCollapsed`), as a per-user convenience only.
 - Dark theme: same token names under `[data-theme="dark"]`; users pick light / dark / system in My profile.
 
+## Pipeline (Kanban) on touch screens
+- **Swipe scrolls, press-and-hold drags**: on touch screens a card is picked up only after holding it ~0.35 s (light vibration where supported), so swiping over a full board always scrolls. Mouse drag starts after 6 px; keyboard: Space + arrows.
+- **Phones (< 600px): no sideways scrolling.** The stages become tabs with counts (all visible, 4 per row) and only the selected stage's cards are listed (`?stage=`). Drop a held card on a tab to move it; while dragging, the card shrinks to a chip above the finger so the tabs stay visible. Tablets and desktop keep the full board.
+- **«Move to ▾» on every card** (native select → the system picker on phones): changing stage never depends on drag precision.
+
 ## Navigation (top navigation, no sidebar)
 - **Three rows at the top, like an Office / Windows app**:
   1. **Title bar** (graphite): Back · Forward · Up, the wordmark, search (command palette), AI assistant, notifications, user menu.

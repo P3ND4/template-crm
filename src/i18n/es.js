@@ -186,7 +186,9 @@ const es = {
     materials: 'Materiales', labor: 'Mano de obra', furniture: 'Mobiliario', permits: 'Permisos', subcontractors: 'Subcontratas', freight: 'Transporte', overhead: 'Gastos generales',
   },
   pipeline: {
-    subtitle: 'Arrastra las tarjetas entre etapas. Valores en USD.',
+    subtitle: 'Arrastra las tarjetas entre etapas (en pantallas táctiles, mantén pulsada la tarjeta) o usa «Mover a». Valores en USD.',
+    moveShort: 'Mover a', stages: 'Etapas', emptyStage: 'No hay oportunidades en esta etapa.',
+    compactHint: 'Mantén pulsada una tarjeta y suéltala sobre otra etapa, o usa «Mover a».',
     search: 'Buscar oportunidades…',
     openValue: 'Pipeline abierto',
     weighted: 'Previsión ponderada',

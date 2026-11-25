@@ -450,7 +450,7 @@ const list = useListState({ sort: 'createdAt:desc', filters: ['status', 'source'
 | `Toast` | `const toast = useToast(); toast.show(msg, { tone, duration })` |
 | `EmptyState` · `Skeleton` / `SkeletonList` · `DataState` | estados de vista |
 | `Kpi` | `label`, `value`, `meta`, `icon` (sin deltas inventados) |
-| `Kanban` | `columns`, `items`, `groupBy`, `renderCard`, `onMove` (mouse, táctil y teclado) |
+| `Kanban` | `columns`, `items`, `groupBy`, `renderCard`, `onMove`; `compact` + `activeColumn`/`onActiveColumn` (teléfono: una columna a la vez, pestañas como destino). Ratón: arrastrar; táctil: **mantener pulsado** ~0,35 s (deslizar siempre hace scroll); teclado: Espacio y flechas. `KanbanMove` = «Mover a ▾» (select nativo) para la tarjeta |
 | `RichTextEditor` | HTML básico (negrita, listas, links); reemplazable por TipTap con las mismas props |
 
 Shells: §8. Listas: `components/list/ListToolbar.jsx`. Celdas comunes: `components/crm/bits.jsx` (`PersonCell`, `StatusBadge`, `RowMenu`, `UserChip`, mapas de colores por estado).

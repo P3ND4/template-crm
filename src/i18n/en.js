@@ -187,7 +187,9 @@ const en = {
     materials: 'Materials', labor: 'Labor', furniture: 'Furniture', permits: 'Permits', subcontractors: 'Subcontractors', freight: 'Freight', overhead: 'Overhead',
   },
   pipeline: {
-    subtitle: 'Drag cards between stages. Values in USD.',
+    subtitle: 'Drag cards between stages (on touch screens, press and hold a card) or use “Move to”. Values in USD.',
+    moveShort: 'Move to', stages: 'Stages', emptyStage: 'No deals in this stage.',
+    compactHint: 'Press and hold a card and drop it on another stage, or use “Move to”.',
     search: 'Search opportunities…',
     openValue: 'Open pipeline',
     weighted: 'Weighted forecast',
