@@ -1,5 +1,6 @@
 import { Languages } from 'lucide-react';
 import { useI18n } from '../../i18n/index.jsx';
+import { BRAND } from '../../app/brand.js';
 
 /** Split screen for sign-in / password reset: brand panel + form. Stacks on phones. */
 export default function AuthLayout({ children }) {
@@ -8,7 +9,7 @@ export default function AuthLayout({ children }) {
     <div className="auth">
       <aside className="auth__brand" aria-hidden="false">
         <div className="auth__brand-inner">
-          <p className="wordmark auth__wordmark">Template<span>.</span><small>CRM</small></p>
+          <p className="wordmark auth__wordmark">{BRAND}<span>.</span></p>
           <div className="auth__pitch">
             <p className="auth__eyebrow">{t('auth.eyebrow')}</p>
             <h2 className="auth__headline">{t('auth.headline')}</h2>

@@ -10,9 +10,9 @@ const pwa = VitePWA({
   includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png', 'icons/favicon-32.png'],
   manifest: {
     id: '/',
-    name: 'Template CRM',
-    short_name: 'Template',
-    description: 'Template CRM — clients, communications, projects, estimates and invoices.',
+    name: 'Asistente',
+    short_name: 'Asistente',
+    description: 'Asistente — clients, communications, projects, estimates and invoices.',
     lang: 'en',
     start_url: '/',
     scope: '/',

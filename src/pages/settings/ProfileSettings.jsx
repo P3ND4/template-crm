@@ -10,6 +10,7 @@ import { useI18n } from '../../i18n/index.jsx';
 import cx from '../../lib/cx.js';
 import { settingsService } from '../../services/index.js';
 import { SettingsForm, SettingsHeader, SettingsSection } from './shared.jsx';
+import { BRAND } from '../../app/brand.js';
 
 const THEMES = [
   { value: 'light', icon: Sun },
@@ -34,7 +35,7 @@ function DeviceSection() {
   const enable = async () => {
     const result = await Notification.requestPermission();
     setPerm(result);
-    if (result === 'granted') await showLocalNotification('Template CRM', t('pwa.testBody'));
+    if (result === 'granted') await showLocalNotification(BRAND, t('pwa.testBody'));
   };
   return (
     <div id="device" ref={ref} className="set-anchor">
@@ -64,7 +65,7 @@ function DeviceSection() {
             <p className="device-row__desc">{t(`pwa.notif.${perm}`)}</p>
           </div>
           {perm === 'default' && <Button size="sm" icon={Bell} onClick={enable}>{t('pwa.enable')}</Button>}
-          {perm === 'granted' && <Button size="sm" variant="ghost" onClick={() => showLocalNotification('Template CRM', t('pwa.testBody'))}>{t('pwa.test')}</Button>}
+          {perm === 'granted' && <Button size="sm" variant="ghost" onClick={() => showLocalNotification(BRAND, t('pwa.testBody'))}>{t('pwa.test')}</Button>}
         </div>
         <div className="device-row">
           <span className="device-row__icon" aria-hidden="true"><WifiOff /></span>

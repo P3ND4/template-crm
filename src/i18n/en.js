@@ -2,8 +2,8 @@
 // es.js mirrors these keys exactly.
 const en = {
   app: {
-    name: 'Template',
-    product: 'CRM',
+    name: 'Asistente',
+    product: '',
     org: 'Demo Company',
     demoData: 'Demo data',
   },
@@ -779,7 +779,7 @@ const en = {
     users: {
       subtitle: 'Invite teammates, choose their role and decide what each role can do.',
       team: 'Team', teamSub: '{n} active members',
-      invite: 'Invite user', inviteTitle: 'Invite a teammate', inviteSub: 'They’ll get an email to join Template CRM.',
+      invite: 'Invite user', inviteTitle: 'Invite a teammate', inviteSub: 'They’ll get an email to join Asistente.',
       sendInvite: 'Send invite', role: 'Role', message: 'Personal message',
       inviteNote: 'Demo: no email is actually sent.',
       alreadyMember: 'This person is already on the team or invited.',
@@ -929,12 +929,12 @@ const en = {
   },
   pwa: {
     install: 'Install app',
-    installed: 'Template CRM installed',
+    installed: 'Asistente installed',
     installedBadge: 'Installed',
     offline: 'Offline',
     online: 'Online',
     offlineHint: 'You’re offline. The CRM keeps working with the data on this device.',
-    offlineReady: 'Template CRM is ready to work offline',
+    offlineReady: 'Asistente is ready to work offline',
     updateTitle: 'New version available',
     updateBody: 'Reload to get the latest changes. Unsaved work is kept until you choose.',
     reload: 'Reload',
@@ -967,7 +967,7 @@ const en = {
     headline: 'Clients, projects and invoices in one calm place.',
     lede: 'Leads, messages, appointments, projects, estimates and payments — a ready-made starting point for any service business.',
     signInTitle: 'Sign in',
-    signInSub: 'Welcome back to Template CRM.',
+    signInSub: 'Welcome back to Asistente.',
     password: 'Password',
     showPassword: 'Show password',
     hidePassword: 'Hide password',

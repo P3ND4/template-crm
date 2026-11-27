@@ -1,8 +1,8 @@
 // Spanish UI strings — same keys as en.js.
 const es = {
   app: {
-    name: 'Template',
-    product: 'CRM',
+    name: 'Asistente',
+    product: '',
     org: 'Demo Company',
     demoData: 'Datos de demostración',
   },
@@ -778,7 +778,7 @@ const es = {
     users: {
       subtitle: 'Invita al equipo, elige su rol y decide qué puede hacer cada rol.',
       team: 'Equipo', teamSub: '{n} miembros activos',
-      invite: 'Invitar usuario', inviteTitle: 'Invitar a un compañero', inviteSub: 'Recibirá un email para unirse a Template CRM.',
+      invite: 'Invitar usuario', inviteTitle: 'Invitar a un compañero', inviteSub: 'Recibirá un email para unirse a Asistente.',
       sendInvite: 'Enviar invitación', role: 'Rol', message: 'Mensaje personal',
       inviteNote: 'Demo: no se envía ningún email.',
       alreadyMember: 'Esta persona ya está en el equipo o tiene una invitación.',
@@ -928,12 +928,12 @@ const es = {
   },
   pwa: {
     install: 'Instalar app',
-    installed: 'Template CRM instalado',
+    installed: 'Asistente instalado',
     installedBadge: 'Instalada',
     offline: 'Sin conexión',
     online: 'En línea',
     offlineHint: 'Estás sin conexión. El CRM sigue funcionando con los datos de este dispositivo.',
-    offlineReady: 'Template CRM ya funciona sin conexión',
+    offlineReady: 'Asistente ya funciona sin conexión',
     updateTitle: 'Nueva versión disponible',
     updateBody: 'Recarga para ver los últimos cambios. Tu trabajo sin guardar se mantiene hasta que decidas.',
     reload: 'Recargar',
@@ -966,7 +966,7 @@ const es = {
     headline: 'Clientes, proyectos y facturas en un solo lugar tranquilo.',
     lede: 'Leads, mensajes, citas, proyectos, presupuestos y pagos: un punto de partida listo para cualquier negocio de servicios.',
     signInTitle: 'Iniciar sesión',
-    signInSub: 'Bienvenido de nuevo a Template CRM.',
+    signInSub: 'Bienvenido de nuevo a Asistente.',
     password: 'Contraseña',
     showPassword: 'Mostrar contraseña',
     hidePassword: 'Ocultar contraseña',

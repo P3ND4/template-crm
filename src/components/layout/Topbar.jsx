@@ -14,6 +14,7 @@ import { SETTINGS_META } from '../../services/index.js';
 import { usePwa } from '../../app/pwa.js';
 import cx from '../../lib/cx.js';
 import { useRibbonState } from './Ribbon.jsx';
+import { BRAND } from '../../app/brand.js';
 import { OverflowClone, usePriorityPlus } from './Overflow.jsx';
 import useMediaQuery, { PHONE_QUERY } from '../../hooks/useMediaQuery.js';
 
@@ -112,7 +113,7 @@ export default function Topbar({ onOpenSearch, unread = [], counts = {}, collaps
           <button type="button" className="tb-btn hide-mobile" onClick={() => navigate(1)} disabled={!hist.canForward} aria-label={t('address.forward')} title={`${t('address.forward')} (Alt+→)`}><ArrowRight aria-hidden="true" /></button>
           <button type="button" className="tb-btn hide-mobile" onClick={() => hist.up && navigate(hist.up)} disabled={!hist.up} aria-label={t('address.up')} title={t('address.up')}><ArrowUp aria-hidden="true" /></button>
         </div>
-        <Link to="/" className="titlebar__brand" aria-label="Template CRM — Dashboard">Template<span>.</span><small>CRM</small></Link>
+        <Link to="/" className="titlebar__brand" aria-label={`${BRAND} — Dashboard`}>{BRAND}<span>.</span></Link>
         <button type="button" className="search-trigger" onClick={onOpenSearch} aria-label={`${t('topbar.searchShort')} (${isMac ? '⌘' : 'Ctrl'}+K)`} title={`${t('topbar.searchShort')} (${isMac ? '⌘' : 'Ctrl'}+K)`}>
           <Search aria-hidden="true" />
           <span className="label">{t('topbar.searchShort')}</span>
